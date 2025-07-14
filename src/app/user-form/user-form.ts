@@ -14,7 +14,7 @@ export class UserForm {
   paziente = new Paziente();
 
   constructor() {
-    //this.carica(); PROVA CHE SALVAA
+    //this.carica();
   }
 
   // Converte in una stringa e salva in localStorage
