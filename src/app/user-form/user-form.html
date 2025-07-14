@@ -1,0 +1,17 @@
+<div class="form-container">
+  <h2>Inserisci i tuoi dati</h2>
+  
+  <form (ngSubmit)="salva()">
+    <div>
+      <label>Nome:</label>
+      <input [(ngModel)]="paziente.nome" name="nome" required />
+    </div>
+
+    <div>
+      <label>Cognome:</label>
+      <input [(ngModel)]="paziente.cognome" name="cognome" required />
+    </div>
+
+    <button type="submit">Salva</button>
+  </form>
+</div>
