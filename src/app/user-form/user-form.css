@@ -1,10 +1,52 @@
 .form-container {
-  max-width: 400px;
-  margin: 20px auto;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
-.form-container div {
-  margin-bottom: 10px;
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inline-group {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pair {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex: 1;
+  min-width: 100px;
+}
+
+.pair label {
+  white-space: nowrap;
+  min-width: 100px;
+  font-weight: bold;
+}
+
+.pair input {
+  flex: 1;
+  padding: 0.4rem;
+  box-sizing: border-box;
+}
+
+.pair.small {
+  flex: 0 0 150px;
+}
+
+.pair.small input {
+  width: 60px;
+}
+
+button {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
 }

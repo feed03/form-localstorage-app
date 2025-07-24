@@ -14,7 +14,7 @@ export class UserForm {
   paziente = new Paziente();
 
   constructor() {
-    //this.carica();
+    this.carica();
   }
 
   // Converte in una stringa e salva in localStorage
@@ -27,7 +27,7 @@ export class UserForm {
   carica() {
     const saved = localStorage.getItem('paziente');
     if (saved) {
-      //this.paziente = Paziente.fromJSON(saved);
+      this.paziente = Paziente.fromJSON(saved);
     }
   }
 }
