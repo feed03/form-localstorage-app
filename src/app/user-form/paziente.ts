@@ -17,4 +17,4 @@ export class Paziente {
         const obj = JSON.parse(json); // Converte la stringa in un oggetto
         return new Paziente(obj.nome, obj.cognome); // Crea una nuova istanza della classe Paziente
     }
-}
+}  //Prova se salva
