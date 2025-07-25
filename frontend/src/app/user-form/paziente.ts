@@ -7,8 +7,8 @@ export class Paziente {
     gender: Gender;
     cityOfBirth: string;
     address: string;
-    houseNumber: number;
-    zipCode: number;
+    houseNumber: string;
+    zipCode: string;
     city: string;
 
     constructor(
@@ -18,8 +18,8 @@ export class Paziente {
         gender: Gender = "",
         cityOfBirth: string = '',
         address: string = '',
-        houseNumber: number = 0,
-        zipCode: number = 0,
+        houseNumber: string = '',
+        zipCode: string = '',
         city: string = '' ){
         
         this.name = nome;

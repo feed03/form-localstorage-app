@@ -56,7 +56,14 @@
         <input [(ngModel)]="paziente.zipCode" name="cap" required />
       </div>
     </div>
-
+    
     <button type="submit">Salva</button>
+    <button (click)="reset()">Reset</button>
+    
+    <!-- Prova del backend -->
+    <button (click)="generaNumero()">Genera numero casuale</button>
+    <p *ngIf="numeroCasuale !== null">
+      Numero dal backend: {{ numeroCasuale }}
+    </p>
   </form>
 </div>

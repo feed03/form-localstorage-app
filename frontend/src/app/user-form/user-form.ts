@@ -1,19 +1,23 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { Paziente } from './paziente';
+import { NumberService } from '../number.service'; // <== IMPORTA IL SERVIZIO
+
 
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './user-form.html',
   styleUrl: './user-form.css'
 })
 
 export class UserForm {
   paziente = new Paziente();
+  numeroCasuale: number | null = null; 
 
-  constructor() {
+  constructor(private numberService: NumberService) {
     this.carica();
   }
 
@@ -29,5 +33,19 @@ export class UserForm {
     if (saved) {
       this.paziente = Paziente.fromJSON(saved);
     }
+  }
+
+  //Resetta i dati del salvataggio
+  reset() {
+  this.paziente = new Paziente();
+  localStorage.removeItem('paziente');
+  alert('Dati resettati!');
+  }
+
+  //Metodo per ottenere il numero dal backend
+  generaNumero() {
+    this.numberService.getRandomNumber().subscribe(risposta => {
+      this.numeroCasuale = risposta.numero;
+    });
   }
 }
