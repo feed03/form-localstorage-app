@@ -4,7 +4,9 @@
 /out-tsc
 /bazel-out
 /coverage
-/.angular/cache
+.angular/
+**/.angular/cache/
+
 
 # Node modules
 /node_modules
