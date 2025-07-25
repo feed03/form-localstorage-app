@@ -1,9 +1,16 @@
-import { Component } from '@angular/core';
+// Import componenti Angular
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+
+// Import servizi
 import { Paziente } from './paziente';
 import { NumberService } from '../number.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { AudioRecorder } from '../audio/audioRecorder';
+
+// Import del servizio HTTP per l'invio al backend
+import { HttpClient } from '@angular/common/http';
 
 
 @Component({
@@ -14,96 +21,75 @@ import { ChangeDetectorRef } from '@angular/core';
   styleUrl: './user-form.css'
 })
 
-export class UserForm {
+export class UserForm implements OnInit {
   paziente = new Paziente();
-  numeroCasuale: number | null = null; 
+  numeroCasuale: number | null = null;
 
-  isRecording = false; // Indica se la registrazione è attiva
-  mediaRecorder!: MediaRecorder; //Oggetto per la gestione della registrazione
-  chunks: Blob[] = []; // Array per contenere blocchi della registrazione 
-  audioUrl: string | null = null; // URL dell'audio 
+  recorder!: AudioRecorder; // Oggetto per la gestione dell'audio
+  audioUrl: string | null = null; // URL generato per ascoltare l'audio generato
 
-  //Prova per ascoltare l'audio
-  audioElement!: HTMLAudioElement;
+  isRecording = false; // tiene traccia se stiamo registrando
 
-  constructor(private numberService: NumberService, private cd: ChangeDetectorRef) {
+  constructor(
+    private numberService: NumberService, // Service per l'invio del numero casuale
+    private cd: ChangeDetectorRef, // Forzare gli aggiornamenti nel template
+    private http: HttpClient // Invio dei blobs al BE
+  ) {
     this.carica();
   }
 
-  // Converte in una stringa e salva in localStorage
-  salva() {
-    localStorage.setItem ('paziente', this.paziente.toJSON());
-    alert('Dati salvati correttamente!');
+  ngOnInit() {
+    this.recorder = new AudioRecorder((blob) => {
+      const formData = new FormData();
+      formData.append('audio', blob, 'audio.webm');
+
+      //Invio tramite POST al backend
+      this.http.post('http://localhost:3000/upload-audio', formData).subscribe({
+        next: () => console.log('Blob inviato'), // Stampa di conferma
+        error: (err) => console.error('Errore invio:', err) // Stampa di errore
+      });
+
+    });
   }
 
-  //Carica la stringa dalla localStorage e la converte in oggetto
+  // Salva localmente i dati (cache del browser)
+  salva() {
+    localStorage.setItem('paziente', this.paziente.toJSON()); 
+    alert('Dati salvati correttamente!');
+  }
+  
+  // Carica dalla cache i dati
   carica() {
     const saved = localStorage.getItem('paziente');
     if (saved) {
       this.paziente = Paziente.fromJSON(saved);
     }
   }
-
-  //Resetta i dati del salvataggio
+  
+  // Cancella i dati dalla cache
   reset() {
-  this.paziente = new Paziente();
-  localStorage.removeItem('paziente');
-  alert('Dati resettati!');
+    this.paziente = new Paziente();
+    localStorage.removeItem('paziente');
+    alert('Dati resettati!');
   }
 
-  //Metodo per ottenere il numero dal backend
   generaNumero() {
     this.numberService.getRandomNumber().subscribe(risposta => {
       this.numeroCasuale = risposta.numero;
     });
   }
-
-    // Metodo per avviare la registrazione audio
-  async startRecording() {
-    this.audioUrl = null;     // Resetta l'audio precedente
-    this.chunks = [];         // Pulisce i vecchi dati
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); // Richiede l'accesso al microfono
-      this.mediaRecorder = new MediaRecorder(stream); // Crea un MediaRecorder con lo stream audio
-
-      // Quando arrivano dati audio, li aggiungiamo all'array chunks
-      this.mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          this.chunks.push(e.data);
-        }
-      };
-
-      // Quando la registrazione finisce, crea il blob audio e genera un URL per il player
-      this.mediaRecorder.onstop = () => {
-        const blob = new Blob(this.chunks, { type: 'audio/webm' });
-        this.audioUrl = URL.createObjectURL(blob);
-        this.cd.detectChanges(); //Forza l'aggiornamento   
-      };
-
-      // Avvia la registrazione
-      this.mediaRecorder.start(2000); // Un blob ogni 2sec
-      this.isRecording = true;
-    } catch (err) {
-      // In caso di errore (es. microfono bloccato o negato)
-      console.error('Microfono non disponibile:', err);
-    }
+  
+  // Inzia la registrazione
+  startRecording() {
+    this.recorder.start();
+    this.isRecording = true;
   }
 
-  // Metodo per stoppare la registrazione
+  // Stoppa la registrazione
   stopRecording() {
-    if (this.mediaRecorder && this.isRecording) {
-      this.mediaRecorder.stop();
-      this.isRecording = false;
-    }
+    const finalBlob = this.recorder.stop();
+    this.audioUrl = URL.createObjectURL(finalBlob);
+    this.isRecording = false; 
+    this.cd.detectChanges(); // Forza l’aggiornamento se necessario
   }
-
-  /*playAudio() {
-    if (this.audioUrl) {
-      if (!this.audioElement) {
-        this.audioElement = new Audio(this.audioUrl);
-      }
-      this.audioElement.play();
-    }
-  }*/
 }

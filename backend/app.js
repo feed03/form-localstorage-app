@@ -1,21 +1,19 @@
 // Importa Express e CORS
 const express = require('express');
 const cors = require('cors');
+const audioRoutes = require('./routes/audioRoutes');
 
-// Crea un'applicazione Express
-const app = express();
 
-// Abilita CORS per permettere richieste dal frontend (es. localhost:4200)
-app.use(cors());
+const app = express(); // Crea un'applicazione Express
 
-// Middleware per leggere JSON dal body delle richieste
-app.use(express.json());
+app.use(cors()); // Abilita CORS per permettere richieste dal frontend (es. localhost:4200)
+app.use(express.json()); // Middleware per leggere JSON dal body delle richieste
 
-// Importa le rotte utenti
-const userRoutes = require('./routes/numberRoutes');
+const userRoutes = require('./routes/numberRoutes'); // Importa le rotte utenti
 
 // Usa le rotte importate sotto il prefisso /api/users
 app.use('/api/numero', userRoutes);
+app.use('/upload-audio', audioRoutes);
 
 // Server in ascolto sulla porta 3000 
 const PORT = 3000;
