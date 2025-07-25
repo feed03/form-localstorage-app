@@ -1,7 +1,7 @@
 <div class="form-container">
   <h2>Inserisci i tuoi dati</h2>
 
-  <form (ngSubmit)="salva()">
+  <form>
     
     <div class="inline-group">
       <div class="pair">
@@ -57,13 +57,26 @@
       </div>
     </div>
     
-    <button type="submit">Salva</button>
-    <button (click)="reset()">Reset</button>
+    <div class="bottonLine">
+      <button (click)="salva()">Salva</button>
+      <button (click)="reset()">Reset</button>
+    </div>
+    
     
     <!-- Prova del backend -->
     <button (click)="generaNumero()">Genera numero casuale</button>
     <p *ngIf="numeroCasuale !== null">
       Numero dal backend: {{ numeroCasuale }}
     </p>
+
+    <div class="bottonLine">
+      <h2>Registrazione Audio</h2>
+
+        <button (click)="startRecording()" [disabled]="isRecording">Avvia</button>
+        <button (click)="stopRecording()" [disabled]="!isRecording">Ferma</button>
+    
+        <p *ngIf="isRecording" style="color: red;">Registrazione in corso...</p>
+   </div>
+    <audio *ngIf="audioUrl" [src]="audioUrl" controls></audio>
   </form>
 </div>

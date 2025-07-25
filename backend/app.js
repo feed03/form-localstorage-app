@@ -17,7 +17,7 @@ const userRoutes = require('./routes/numberRoutes');
 // Usa le rotte importate sotto il prefisso /api/users
 app.use('/api/numero', userRoutes);
 
-// Avvia il server sulla porta 3000
+// Server in ascolto sulla porta 3000 
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
