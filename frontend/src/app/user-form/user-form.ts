@@ -78,7 +78,7 @@ export class UserForm {
       this.mediaRecorder.onstop = () => {
         const blob = new Blob(this.chunks, { type: 'audio/webm' });
         this.audioUrl = URL.createObjectURL(blob);
-        this.cd.detectChanges(); //Forza l'aggiornamento
+        this.cd.detectChanges(); //Forza l'aggiornamento   
       };
 
       // Avvia la registrazione
