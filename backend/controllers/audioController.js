@@ -3,23 +3,31 @@ const fs = require('fs');
 
 // Funzione exportata per gestire l'upload
 exports.uploadAudio = (req, res) => {
-    // Controlla se il file è stato ricevuto correttamente
-    if (!req.file) {
+  // Controlla se il file è stato ricevuto correttamente
+  if (!req.file) {
     return res.status(400).send('Nessun file audio ricevuto.');
-  }
+  } 
 
   const uploadPath = path.join(__dirname, '..', 'uploads'); // Percorso per la rep
 
-  if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath); // Se la rep non esiste la crea
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, {recursive: true}); // Se la rep non esiste la crea
+  }
+  
+  // Leggi i file esistenti che iniziano con 'audio-'
+  const files = fs.readdirSync(uploadPath).filter(file => file.startsWith('audio-'));
 
-  const finalPath = path.join(uploadPath, req.file.originalname); // Percorso per il file
+  const nextNum = (files.length + 1).toString().padStart(2, '0') // Calcolo del prossimo numero con padding a 2 cifre
+  
+  const fileName = `audio-${nextNum}.webm`;
+  const finalPath = path.join(uploadPath, fileName);
 
   fs.writeFile(finalPath, req.file.buffer, (err) => {
     if (err) {
         return res.status(500).send('Errore nel salvataggio del file');
     } else {
-        res.status(200).send('Audio ricevuto con successo.');
         console.log('Audio ricevuto e salvato in:', finalPath);
+        res.status(200).send('Audio salvato comeaaaa ' + fileName);
     }
   });
 };     

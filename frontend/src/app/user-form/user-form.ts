@@ -22,13 +22,13 @@ import { HttpClient } from '@angular/common/http';
 })
 
 export class UserForm implements OnInit {
-  paziente = new Paziente();
+  paziente: Paziente = new Paziente();
   numeroCasuale: number | null = null;
 
   recorder!: AudioRecorder; // Oggetto per la gestione dell'audio
   audioUrl: string | null = null; // URL generato per ascoltare l'audio generato
 
-  isRecording = false; // tiene traccia se stiamo registrando
+  isRecording: boolean = false; // tiene traccia se stiamo registrando
 
   constructor(
     private numberService: NumberService, // Service per l'invio del numero casuale
@@ -39,13 +39,13 @@ export class UserForm implements OnInit {
   }
 
   ngOnInit() {
-    this.recorder = new AudioRecorder((blob) => {
+    this.recorder = new AudioRecorder((blob) => { // Inizializza il recorder audio quando il componente viene caricato
       const formData = new FormData();
       formData.append('audio', blob, 'audio.webm');
 
       //Invio tramite POST al backend
-      this.http.post('http://localhost:3000/upload-audio', formData).subscribe({
-        next: () => console.log('Blob inviato'), // Stampa di conferma
+      this.http.post('http://localhost:3000/upload-audio', formData, { responseType: 'text' }).subscribe({
+        next: (res) => console.log('FE --> Blob inviato', 'BE -->', res), // Stampa di conferma
         error: (err) => console.error('Errore invio:', err) // Stampa di errore
       });
 
@@ -80,16 +80,20 @@ export class UserForm implements OnInit {
   }
   
   // Inzia la registrazione
-  startRecording() {
-    this.recorder.start();
+  async startRecording() {
+    await this.recorder.start();
     this.isRecording = true;
   }
 
   // Stoppa la registrazione
   stopRecording() {
-    const finalBlob = this.recorder.stop();
-    this.audioUrl = URL.createObjectURL(finalBlob);
-    this.isRecording = false; 
-    this.cd.detectChanges(); // Forza l’aggiornamento se necessario
+  this.isRecording = false;
+
+    setTimeout(() => {
+      const finalBlob = this.recorder.stop();
+      this.audioUrl = URL.createObjectURL(finalBlob);
+      console.log('URL audio:', this.audioUrl);
+      this.cd.detectChanges();
+    }, 300); // ritardo minimo per aspettare l’ultimo chunk
   }
 }
