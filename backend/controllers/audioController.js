@@ -27,7 +27,7 @@ exports.uploadAudio = (req, res) => {
         return res.status(500).send('Errore nel salvataggio del file');
     } else {
         console.log('Audio ricevuto e salvato in:', finalPath);
-        res.status(200).send('Audio salvato comeaaaa ' + fileName);
+        res.status(200).send('Audio salvato come: ' + fileName);
     }
   });
 };     

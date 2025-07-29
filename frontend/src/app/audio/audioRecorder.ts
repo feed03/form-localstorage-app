@@ -70,7 +70,7 @@ export class AudioRecorder {
     this.monitorSilence(); // Avvio monitoraggio continuo dell'audio
   }
 
-  private monitorSilence() {
+  private async monitorSilence() {
     
     // Controlli
     if (!this.isMonitoring || !this.analyser || !this.dataArray){
@@ -99,13 +99,16 @@ export class AudioRecorder {
       } else if (Date.now() - this.silenceStart > this.maxSilenceTime) {
         // Se il silenzio dura più di maxSilenceTime => pausa rilevata
         if (this.chunks.length >= 0) {
-          // Creo un blob dai chunk raccolti finora
-          this.mediaRecorder.requestData();
+          // Aspetto blob completo da mediaRecorder
+          const blob = await this.getCurrentBlob();
+          
+          await this.printWebMHeader(blob);
 
-          const blob = new Blob(this.chunks, { type: 'audio/webm' });
-          console.log(blob);
+          this.mediaRecorder.stop();
           // Invio il blob tramite callback
           this.onDataCallback(blob);
+
+          this.mediaRecorder.start();
           // Resetto i chunk parziali per iniziare a raccogliere il prossimo frammento
           console.log('RESETTO CHUNKS', rms);
           this.chunks = []; 
@@ -143,7 +146,32 @@ export class AudioRecorder {
     if (this.audioContext && this.audioContext.state !== 'closed') {
       this.audioContext.close();
     }
-    
+  
     return new Blob(this.allChunks, { type: 'audio/webm' });
   }
+
+  private async printWebMHeader(blob: Blob): Promise<void> {
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const bytes = new Uint8Array(reader.result as ArrayBuffer);
+    // Prendi i primi 4 byte e convertili in esadecimale
+    const headerHex = Array.from(bytes.slice(0, 4))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join(' ');
+    console.log('WebM header bytes:', headerHex);
+  };
+  reader.readAsArrayBuffer(blob.slice(0, 4));
+}// Metodo nuovo per ottenere blob completo da mediaRecorder
+private getCurrentBlob(): Promise<Blob> {
+  return new Promise((resolve) => {
+    const handler = (e: BlobEvent) => {
+      this.mediaRecorder.removeEventListener('dataavailable', handler);
+      resolve(e.data);
+    };
+    this.mediaRecorder.addEventListener('dataavailable', handler);
+    this.mediaRecorder.requestData();
+  });
+
+}
+
 }
