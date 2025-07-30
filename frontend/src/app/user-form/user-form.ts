@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 
 // Import servizi
 import { Paziente } from './paziente';
-import { NumberService } from '../number.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { AudioRecorder } from '../audio/audioRecorder';
 
@@ -31,8 +30,7 @@ export class UserForm implements OnInit {
   isRecording: boolean = false; // tiene traccia se stiamo registrando
 
   constructor(
-    private numberService: NumberService, // Service per l'invio del numero casuale
-    private cd: ChangeDetectorRef, // Forzare gli aggiornamenti nel template
+    //private cd: ChangeDetectorRef, // Forzare gli aggiornamenti nel template
     private http: HttpClient // Invio dei blobs al BE
   ) {
     this.carica();
@@ -72,16 +70,10 @@ export class UserForm implements OnInit {
     localStorage.removeItem('paziente');
     alert('Dati resettati!');
   }
-
-  generaNumero() {
-    this.numberService.getRandomNumber().subscribe(risposta => {
-      this.numeroCasuale = risposta.numero;
-    });
-  }
   
   // Inzia la registrazione
   async startRecording() {
-    await this.recorder.start();
+    await this.recorder.startRec();
     this.isRecording = true;
   }
 
@@ -90,10 +82,11 @@ export class UserForm implements OnInit {
   this.isRecording = false;
 
     setTimeout(() => {
-      const finalBlob = this.recorder.stop();
+      const finalBlob = this.recorder.stopRec(); // Il blob completo di tutta la registrazione
+
       this.audioUrl = URL.createObjectURL(finalBlob);
       console.log('URL audio:', this.audioUrl);
-      this.cd.detectChanges();
+      //this.cd.detectChanges();
     }, 300); // ritardo minimo per aspettare l’ultimo chunk
   }
 }

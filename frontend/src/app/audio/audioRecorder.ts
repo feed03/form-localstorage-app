@@ -20,34 +20,30 @@ export class AudioRecorder {
 
   private isMonitoring = false; // Controllo sul monitorSilence
 
-  // Costruttore riceve la callback per gestire i blob audio
+  // Costruttore riceve la callback per invio dei blob audio al BE
   constructor(onDataCallback: (blob: Blob) => void) {
     this.onDataCallback = onDataCallback;
   }
 
-  async start() {
+  async startRec() {
 
-    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true }); // Richiesta di attivazione microfono
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true }); // Richiesta accesso al mic 
+    } catch (err) {
+      console.error('Accesso al microfono negato o fallito:', err);
+      return;
+    }
     this.mediaRecorder = new MediaRecorder(this.stream); // Creo un nuovo oggetto MediaRecorder che registra il flusso
-    
-    this.chunks = [];
-    this.allChunks = [];
 
     // Funzione chiamata ogni volta che un nuovo frame di audio è disponibile
     this.mediaRecorder.ondataavailable = (e) => {
-      
-      console.log('Data available', e.data);
-
-      this.chunks.push(e.data);
-      this.allChunks.push(e.data);
-    
+      this.chunks.push(e.data); // Chunks temporaneo
+      this.allChunks.push(e.data); // Chunks cumulativo per tutta la registrazione
     };
 
-    // Avvio della registrazione
-    this.mediaRecorder.start();
+    this.mediaRecorder.start(); // Avvio della registrazione
 
-    // Setup per analizzare il silenzio
-    this.audioContext = new AudioContext(); // Serve per analizzare il volume dell'audio in realtime
+    this.audioContext = new AudioContext(); // Oggetto AudioContext per analizzare il silenzio
 
     // Assicurati che l'AudioContext sia attivo
       if (this.audioContext.state === 'suspended') {
@@ -59,11 +55,11 @@ export class AudioRecorder {
     // Configurazione analyser 
     this.analyser = this.audioContext.createAnalyser(); // Nodo analyser per ottenere dati in tempo reale
     this.analyser.fftSize = 256; // Dimensione della FFT risoluzione analisi frequenza
-    this.analyser.smoothingTimeConstant = 0.3; // Smoothing dei dati
+    this.analyser.smoothingTimeConstant = 0.3; // Smoothing dei dati 
     
     source.connect(this.analyser); // Connetto il mic all' analyser per lettura in tempo reale
 
-    this.dataArray = new Uint8Array(this.analyser.frequencyBinCount); // Array per contenere i dati audio
+    this.dataArray = new Uint8Array(this.analyser.frequencyBinCount); // Intesità del segnale audio (da 0 a 255)
 
     this.silenceStart = null; // Reset del timer di inizio silenzio
     this.isMonitoring = true; // Setto il flag per avviare la registrazione
@@ -72,7 +68,7 @@ export class AudioRecorder {
 
   private async monitorSilence() {
     
-    // Controlli
+    // Controlli per fermare l'esecuzione
     if (!this.isMonitoring || !this.analyser || !this.dataArray){
       return;
     }
@@ -80,98 +76,74 @@ export class AudioRecorder {
     // Leggo i dati audio in tempo reale
     const buf = new Uint8Array(this.analyser.frequencyBinCount); // Buff temporaneo per evitare errori di tipi
     this.analyser.getByteTimeDomainData(buf);
-    
-    this.dataArray = buf;
+    this.dataArray = buf; // Copia nel buff originale
 
-    // Calcolo RMS (root mean square) per stimare il volume attuale
-    let sum = 0;
-    for (let i = 0; i < this.dataArray.length; i++) {
-      const val = this.dataArray[i] - 128; // Centro a zero
-      sum += val * val;
-    }
-    const rms = Math.sqrt(sum / this.dataArray.length); // Calcolo del volume
+    const rms = this.computeRMS(this.dataArray); // Calcolo del volume
 
     try{
       if (rms < this.silenceThreshold) {
       // Silenzio
-      if (this.silenceStart === null) {
-        this.silenceStart = Date.now(); // Segno l'inizio del silenzio
-      } else if (Date.now() - this.silenceStart > this.maxSilenceTime) {
-        // Se il silenzio dura più di maxSilenceTime => pausa rilevata
-        if (this.chunks.length >= 0) {
-          // Aspetto blob completo da mediaRecorder
-          const blob = await this.getCurrentBlob();
-          
-          await this.printWebMHeader(blob);
+        if (this.silenceStart === null) {
+          this.silenceStart = Date.now(); // Segno l'inizio del silenzio
+        } else if (Date.now() - this.silenceStart > this.maxSilenceTime) {
+          // Se il silenzio dura più di maxSilenceTime => pausa rilevata
+          this.mediaRecorder.requestData(); // Richiesta dei dati registrati fin ora, evento ondataavailable
+          if (this.chunks.length > 0) {
+            const blob = this.createBlob(this.chunks); // Creo il blob da inviare al BE
+            this.mediaRecorder.stop();
+            
+            if (blob.size > 0) {
+              this.onDataCallback(blob); // Invio il blob al BE tramite callback
+            }
 
-          this.mediaRecorder.stop();
-          // Invio il blob tramite callback
-          this.onDataCallback(blob);
-
-          this.mediaRecorder.start();
-          // Resetto i chunk parziali per iniziare a raccogliere il prossimo frammento
-          console.log('RESETTO CHUNKS', rms);
-          this.chunks = []; 
+            this.mediaRecorder.start();
+            this.chunks = []; 
+          }
+          this.silenceStart = null; // Reset timer
         }
-
-        // Resetto il timer silenzio per rilevare la prossima pausa
+      } else {
         this.silenceStart = null;
       }
-    } else {
-      // Se il volume è sopra soglia, resetto il timer silenzio
-      this.silenceStart = null;
-    }
     }catch(error){
       console.error('Errore nel monitoraggio audio:', error);
       return;
     }
-
-    // Continuo a monitorare silenzio usando requestAnimationFrame
-    requestAnimationFrame(() => this.monitorSilence());
+    requestAnimationFrame(() => this.monitorSilence());  // Continuo a monitorare
   }
 
-  stop(): Blob {
+  stopRec(): Blob {
     if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-        this.mediaRecorder.requestData();
-        this.mediaRecorder.stop();
+      this.mediaRecorder.requestData();
+      const blob = this.createBlob(this.chunks);
+      this.mediaRecorder.stop(); // Stop manuale della registrazione
+      this.onDataCallback(blob);
     }
 
     if(this.stream){
-      this.stream.getTracks().forEach(track => track.stop());
+      this.stream.getTracks().forEach(track => track.stop()); // Interrompe tutte le tracce audio
     }
     
     this.isMonitoring = false; // Flag per stoppare il monitorService
 
     // Chiudi l'AudioContext per liberare risorse
     if (this.audioContext && this.audioContext.state !== 'closed') {
-      this.audioContext.close();
+      this.audioContext.close(); // Chiude il contesto 
     }
-  
-    return new Blob(this.allChunks, { type: 'audio/webm' });
+    
+    const finalBlob = this.createBlob(this.allChunks); // Creazione blob finale
+
+    console.log('Audio finale: ', finalBlob);
+
+    return finalBlob;
   }
 
-  private async printWebMHeader(blob: Blob): Promise<void> {
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    const bytes = new Uint8Array(reader.result as ArrayBuffer);
-    // Prendi i primi 4 byte e convertili in esadecimale
-    const headerHex = Array.from(bytes.slice(0, 4))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join(' ');
-    console.log('WebM header bytes:', headerHex);
-  };
-  reader.readAsArrayBuffer(blob.slice(0, 4));
-}// Metodo nuovo per ottenere blob completo da mediaRecorder
-private getCurrentBlob(): Promise<Blob> {
-  return new Promise((resolve) => {
-    const handler = (e: BlobEvent) => {
-      this.mediaRecorder.removeEventListener('dataavailable', handler);
-      resolve(e.data);
-    };
-    this.mediaRecorder.addEventListener('dataavailable', handler);
-    this.mediaRecorder.requestData();
-  });
+  createBlob(chunk: Blob []): Blob{
+    return new Blob(chunk, { type: 'audio/webm;codecs=opus' });
+  }
 
-}
-
+  // Calcolo RMS (volume)
+  private computeRMS(data: Uint8Array): number {
+    const sum = data.reduce((acc, val) => acc + Math.pow(val - 128, 2), 0);
+    return Math.sqrt(sum / data.length);
+  }
 }
