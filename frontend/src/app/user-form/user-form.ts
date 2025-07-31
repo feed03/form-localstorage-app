@@ -29,6 +29,8 @@ export class UserForm implements OnInit {
 
   isRecording: boolean = false; // tiene traccia se stiamo registrando
 
+  trascrizione: string = " ";
+
   constructor(
     //private cd: ChangeDetectorRef, // Forzare gli aggiornamenti nel template
     private http: HttpClient // Invio dei blobs al BE
@@ -42,11 +44,19 @@ export class UserForm implements OnInit {
       formData.append('audio', blob, 'audio.webm');
 
       //Invio tramite POST al backend
-      this.http.post('http://localhost:3000/upload-audio', formData, { responseType: 'text' }).subscribe({
-        next: (res) => console.log('FE --> Blob inviato', 'BE -->', res), // Stampa di conferma
-        error: (err) => console.error('Errore invio:', err) // Stampa di errore
+      this.http.post<any>('http://localhost:3000/upload-audio', formData).subscribe({
+        next: (res) => {
+          console.log('FE --> Blob inviato', 'BE -->', res);
+          // Salva il testo trascritto se disponibile
+          if (res && res.transcriptionJob && res.transcriptionJob.DisplayText) {
+            this.trascrizione += ' \n ' + res.transcriptionJob.DisplayText;
+            console.log('TRASCRIZIONE: ', this.trascrizione);
+          }
+        },
+        error: (err) => {
+          console.error('Errore invio:', err);
+        }
       });
-
     });
   }
 

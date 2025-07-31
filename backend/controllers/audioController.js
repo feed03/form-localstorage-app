@@ -1,30 +1,73 @@
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
+const ffmpeg = require('fluent-ffmpeg');
+const { spawn } = require('child_process');
+const { Readable } = require('stream');
+const axios = require('axios');
+require('dotenv').config();
 
-// Funzione exportata per gestire l'upload
-exports.uploadAudio = (req, res) => {
-  // Controlla se il file è stato ricevuto correttamente
-  if (!req.file) {
-    return res.status(400).send('Nessun file audio ricevuto.');
-  } 
+const AZURE_SPEECH_KEY = process.env.AZURE_SPEECH_KEY;
+const AZURE_REGION = process.env.AZURE_SPEECH_REGION;
+// Funzione per convertire WebM in WAV PCM
+function convertToAzureWav(inputBuffer, outputPath) {
+  return new Promise((resolve, reject) => {
+    const stream = new Readable();
+    stream.push(inputBuffer);
+    stream.push(null);
 
-  const uploadPath = path.join(__dirname, '..', 'uploads'); // Percorso per la rep
-
-  if (!fs.existsSync(uploadPath)) {
-    fs.mkdirSync(uploadPath, {recursive: true}); // Se la rep non esiste la crea
-  }
-  
-  const files = fs.readdirSync(uploadPath).filter(file => file.startsWith('audio-')); // Leggi i file esistenti che iniziano con 'audio-'
-  const nextNum = (files.length + 1).toString().padStart(2, '0') // Calcolo del prossimo numero con padding a 2 cifre
-  const fileName = `audio-${nextNum}.webm`;
-  const finalPath = path.join(uploadPath, fileName);
-
-  fs.writeFile(finalPath, req.file.buffer, (err) => {
-    if (err) {
-        return res.status(500).send('Errore nel salvataggio del file');
-    } else {
-        console.log('Audio ricevuto e salvato in:', finalPath);
-        res.status(200).send('Audio salvato come: ' + fileName);
-    }
+    ffmpeg(stream)
+      .inputFormat('webm')
+      .audioCodec('pcm_s16le')
+      .audioFrequency(16000)
+      .audioChannels(1)
+      .format('wav')
+      .on('end', resolve)
+      .on('error', reject)
+      .save(outputPath);
   });
+}
+
+// Gestione dell'upload dell'audio
+exports.uploadAudio = async (req, res) => {
+  try{
+    if (!req.file) {
+      return res.status(400).send('Nessun file audio ricevuto.');
+    } 
+
+    const uploadPath = path.join(__dirname, '..', 'uploads'); // Percorso per la repository degli upload
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, {recursive: true}); // Se la rep non esiste la crea
+    }
+
+    const files = fs.readdirSync(uploadPath).filter(file => file.startsWith('audio-')); // Leggi i file esistenti che iniziano con 'audio-'
+    const nextNum = (files.length + 1).toString().padStart(2, '0') // Calcolo del prossimo numero con padding a 2 cifre
+    const fileName = `audio-${nextNum}.wav`;
+    const finalPath = path.join(uploadPath, fileName);
+
+    // Conversione WebM → WAV
+    await convertToAzureWav(req.file.buffer, finalPath);
+    console.log('Conversione completata:', fileName);
+
+    // Invia il file convertito ad Azure Speech
+    const audioData = fs.readFileSync(finalPath);
+    const url = `https://${AZURE_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=it-IT`;
+    
+    const response = await axios.post(url, audioData, {  // Invio richiesta POST a Azure Speech
+      headers: {
+        'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY, 
+        'Content-Type': 'audio/wav',
+        'Accept': 'application/json'
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
+    });
+
+    res.status(200).json({
+      message: 'Audio salvato e inviato per trascrizione.',
+      transcriptionJob: response.data
+    });
+
+  }catch(error){
+    res.status(500).json({ error: error.toString() });
+  }
 };     

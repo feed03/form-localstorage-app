@@ -65,3 +65,7 @@ audio {
   display: block;
   margin: 20px auto;
 }
+
+#trascrizione {
+  font-size: 24px;
+}

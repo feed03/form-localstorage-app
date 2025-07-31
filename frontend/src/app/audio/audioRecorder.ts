@@ -16,7 +16,7 @@ export class AudioRecorder {
 
   private silenceThreshold = 10; // Soglia per considerare silenzio (Volume)
 
-  private maxSilenceTime = 3000; // Durata in ms del silenzio per considerare pausa
+  private maxSilenceTime = 1000; // Durata in ms del silenzio per considerare pausa
 
   private isMonitoring = false; // Controllo sul monitorSilence
 
@@ -33,7 +33,9 @@ export class AudioRecorder {
       console.error('Accesso al microfono negato o fallito:', err);
       return;
     }
-    this.mediaRecorder = new MediaRecorder(this.stream); // Creo un nuovo oggetto MediaRecorder che registra il flusso
+    this.mediaRecorder = new MediaRecorder(this.stream, { // Creo un nuovo oggetto MediaRecorder che registra il flusso
+        mimeType: 'audio/webm;codecs=opus'
+    });
 
     // Funzione chiamata ogni volta che un nuovo frame di audio è disponibile
     this.mediaRecorder.ondataavailable = (e) => {
@@ -138,7 +140,7 @@ export class AudioRecorder {
   }
 
   createBlob(chunk: Blob []): Blob{
-    return new Blob(chunk, { type: 'audio/webm;codecs=opus' });
+    return new Blob(chunk, { type: 'audio/webm' });
   }
 
   // Calcolo RMS (volume)
