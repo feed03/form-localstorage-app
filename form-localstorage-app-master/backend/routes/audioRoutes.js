@@ -1,11 +1,10 @@
-const express = require('express');
-const multer = require('multer');
-
-const audioController = require('../controllers/audioController'); // Effettiva logica del servizio
+import express from 'express';
+import multer from 'multer';
+import { uploadAudio } from '../controllers/audioController.js'; // Effettiva logica del servizio
 
 const router = express.Router();
 const upload = multer(); // Nessun disco, usa buffer
 
-router.post('/', upload.single('audio'), audioController.uploadAudio);
+router.post('/', upload.single('audio'), uploadAudio);
 
-module.exports = router;
+export default router;

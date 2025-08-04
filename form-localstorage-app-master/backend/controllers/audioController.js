@@ -1,13 +1,19 @@
-const fs = require('fs');
-const path = require('path');
-const ffmpeg = require('fluent-ffmpeg');
-const { spawn } = require('child_process');
-const { Readable } = require('stream');
-const axios = require('axios');
-require('dotenv').config();
+import fs from 'fs';
+import path from 'path';
+import ffmpeg from 'fluent-ffmpeg';
+import { Readable } from 'stream';
+import axios from 'axios';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+
+dotenv.config();
 
 const AZURE_SPEECH_KEY = process.env.AZURE_SPEECH_KEY;
 const AZURE_REGION = process.env.AZURE_SPEECH_REGION;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Funzione per convertire WebM in WAV PCM
 function convertToAzureWav(inputBuffer, outputPath) {
   return new Promise((resolve, reject) => {
@@ -28,7 +34,7 @@ function convertToAzureWav(inputBuffer, outputPath) {
 }
 
 // Gestione dell'upload dell'audio
-exports.uploadAudio = async (req, res) => {
+export async function uploadAudio(req, res){
   try{
     if (!req.file) {
       return res.status(400).send('Nessun file audio ricevuto.');
@@ -52,7 +58,7 @@ exports.uploadAudio = async (req, res) => {
     const audioData = fs.readFileSync(finalPath);
     const url = `https://${AZURE_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=it-IT`;
     
-    const response = await axios.post(url, audioData, {  // Invio richiesta POST a Azure Speech
+    const response = await axios.post(url, audioData, {  // Invio richiesta POST a AzureSpeech
       headers: {
         'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY, 
         'Content-Type': 'audio/wav',
@@ -70,4 +76,4 @@ exports.uploadAudio = async (req, res) => {
   }catch(error){
     res.status(500).json({ error: error.toString() });
   }
-};     // AGGIORNA FUNZIONAAAAAAa
+};

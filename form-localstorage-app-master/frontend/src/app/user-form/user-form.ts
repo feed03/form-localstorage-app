@@ -31,6 +31,8 @@ export class UserForm implements OnInit {
 
   trascrizione: string = " ";
 
+  trascrizioneProva: string = "Dentista Buongiorno, mi può dire nome e cognome? Federico Criscione. Data di nascita? Ventitré luglio duemilatre. Luogo di nascita? Ragusa. Mi dice anche l’indirizzo? Via del Pioppo 20.";
+
   constructor(
     //private cd: ChangeDetectorRef, // Forzare gli aggiornamenti nel template
     private http: HttpClient // Invio dei blobs al BE
@@ -98,5 +100,22 @@ export class UserForm implements OnInit {
       console.log('URL audio:', this.audioUrl);
       //this.cd.detectChanges();
     }, 300); // ritardo minimo per aspettare l’ultimo chunk
+  }
+
+  inviaTrascrizione() {
+  if (!this.trascrizioneProva.trim()) {
+    alert("La trascrizione è vuota.");
+    return;
+  }
+
+    this.http.post<any>('http://localhost:3000/analizza', { testo: this.trascrizioneProva }).subscribe({
+      next: (res) => {
+        console.log('Risposta dal BE (analisi GPT):', res);
+        alert('Analisi completata: ' + JSON.stringify(res));
+      },
+      error: (err) => {
+        console.error('Errore durante l\'invio della trascrizione:', err);
+      }
+    });
   }
 }

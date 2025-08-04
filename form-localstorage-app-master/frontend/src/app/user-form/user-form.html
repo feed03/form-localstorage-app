@@ -71,6 +71,8 @@
     
         <p *ngIf="isRecording" style="color: red;">Registrazione in corso...</p>
    </div>
+    <button (click)="inviaTrascrizione()">Invia trascrizione di prova</button>
+
     <audio *ngIf="audioUrl" [src]="audioUrl" controls></audio>
     <label for="trascrizione">Trascrizione</label>
     <textarea id="trascrizione" name="trascrizione" rows="10" cols="200" [(ngModel)]="trascrizione" readonly></textarea>
