@@ -1,0 +1,80 @@
+<div class="form-container">
+  <h2>Inserisci i tuoi dati</h2>
+
+  <form>
+    
+    <div class="inline-group">
+      <div class="pair">
+        <label>Nome:</label>
+        <input [(ngModel)]="paziente.name" name="nome" required />
+      </div>
+      <div class="pair">
+        <label>Cognome:</label>
+        <input [(ngModel)]="paziente.surname" name="cognome" required />
+      </div>
+    </div>
+
+    <div class="inline-group double">
+      <div class="pair">
+        <label>Data di nascita:</label>
+        <input [(ngModel)]="paziente.birthDate" name="dataNascita" required type="date" />
+      </div>
+      <div class="pair small">
+        <label>Genere:</label>
+          <select [(ngModel)]="paziente.gender" name="genere" required>
+            <option value="" disabled selected>Seleziona genere</option>
+            <option value="M">Maschile</option>
+            <option value="F">Femminile</option>
+            <option value="Altro">Altro</option>
+          </select>
+      </div>
+    </div>
+
+    <div class="pair">
+        <label>Città di nascita:</label>
+        <input [(ngModel)]="paziente.cityOfBirth" name="cNascita" required />
+    </div>
+
+    <div class="inline-group">
+      <div class="pair">
+        <label>Indirizzo:</label>
+        <input [(ngModel)]="paziente.address" name="indirizzo" required />
+      </div>
+      <div class="pair small">
+        <label>Civico:</label>
+        <input [(ngModel)]="paziente.houseNumber" name="civico" required />
+      </div>
+    </div>
+
+    <div class="inline-group">
+      <div class="pair">
+        <label>Città:</label>
+        <input [(ngModel)]="paziente.city" name="citta" required />
+      </div>
+      <div class="pair small">
+        <label>CAP:</label>
+        <input [(ngModel)]="paziente.zipCode" name="cap" required />
+      </div>
+    </div>
+    
+    <div class="bottonLine">
+      <button (click)="salva()">Salva</button>
+      <button (click)="reset()">Reset</button>
+    </div>
+    
+
+    <div class="bottonLine">
+      <h2>Registrazione Audio</h2>
+
+        <button (click)="startRecording()" [disabled]="isRecording">Avvia</button>
+        <button (click)="stopRecording()" [disabled]="!isRecording">Ferma</button>
+    
+        <p *ngIf="isRecording" style="color: red;">Registrazione in corso...</p>
+   </div>
+    <audio *ngIf="audioUrl" [src]="audioUrl" controls></audio>
+    <label for="trascrizione">Trascrizione</label>
+    <textarea id="trascrizione" name="trascrizione" rows="10" cols="200" [(ngModel)]="trascrizione" readonly></textarea>
+
+  </form>
+</div>
+   
