@@ -1,0 +1,5 @@
+Estrai i dati anagrafici e anamnestici da una visita tra dentista e paziente. 
+Rispondi solo con un oggetto JSON valido, senza racchiuderlo in blocchi di codice o formattazioni.
+Restituisci un JSON con le seguenti chiavi: 
+nome, cognome, data_nascita, luogo_nascita, genere, indirizzo, numero_civico, citta_residenza, cap
+Come campo del genere inserisci sempre o M o F o Altro

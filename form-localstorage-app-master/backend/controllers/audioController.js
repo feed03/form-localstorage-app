@@ -74,6 +74,6 @@ export async function uploadAudio(req, res){
     });
 
   }catch(error){
-    res.status(500).json({ error: error.toString() });
+    res.status(500).json({ error: "Errore nella trascrizone con Azure", details: error.toString() });
   }
 };

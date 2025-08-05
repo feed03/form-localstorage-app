@@ -1,5 +1,7 @@
 import { AzureOpenAI } from "openai";
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 
 dotenv.config();
 
@@ -13,10 +15,14 @@ const client = new AzureOpenAI({
     apiVersion: "2024-04-01-preview", // Versione dell'API compatibile con il deployment
 });
 
+// Carico il contenuto del file prompt da file
+const promptPath = path.resolve("controllers/prompt.txt");
+const systemPrompt = fs.readFileSync(promptPath, "utf-8");
+
+
 // Funzione per anallizzare la trascrizione del parlato --> JSON
 export async function analizzaTrascrizione(req, res) {
-    const { testo } = req.body;
-    console.log('Testo ricevuto: ', testo);
+    const  { testo } = req.body;
     if(!testo){
         return res.status(400).json({ error: "Testo mancante" });
     }
@@ -25,12 +31,8 @@ export async function analizzaTrascrizione(req, res) {
         // Richiesta al modello GPT per analizzare il testo
         const response = await client.chat.completions.create({
         messages: [
-            {
-                role: "system",
-                content:
-                    "Estrai i dati anagrafici e anamnestici da una visita tra dentista e paziente. Restituisci un JSON con le chiavi: nome, cognome, data_nascita, luogo_nascita, patologie, farmaci, allergie, abitudini, sintomi_attuali."
-            },
-            { role: "user", content: testo }
+            { role: "system", content: systemPrompt}, // Contiene il prompt per istruire il modello
+            { role: "user", content: testo } // Contiene la trascrizine da inviare al modello
         ],
         max_completion_tokens: 1000, // Numero massimo di token
         temperature: 0 // Nessuna creatività
@@ -42,7 +44,7 @@ export async function analizzaTrascrizione(req, res) {
         console.log("Risposta GPT:", risposta);
     } catch (err) {
     console.error("Errore durante l'invio a GPT:", err);
-    res.status(500).json({ error: "Errore durante l'analisi del testo" });
+    res.status(500).json({ error: "Errore durante l'elaborazione GPT", details: err.tostring() });
   }
 }
 
