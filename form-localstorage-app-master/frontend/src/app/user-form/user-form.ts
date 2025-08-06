@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 
 // Import servizi
 import { Paziente } from './paziente';
-import { ChangeDetectorRef } from '@angular/core';
 import { AudioRecorder } from '../audio/audioRecorder';
 
 // Import del servizio HTTP per l'invio al backend
@@ -31,13 +30,15 @@ export class UserForm implements OnInit {
 
   trascrizione: string = " ";
 
-  trascrizioneProva: string = "Dentista Buongiorno, mi può dire nome e cognome? Federico Criscione. Data di nascita? Ventitré luglio duemilatre. Luogo di nascita? Ragusa. Mi dice anche l’indirizzo? Via del Pioppo 20.";
+  trascrizioneProva: string = "";
+
 
   constructor(
     //private cd: ChangeDetectorRef, // Forzare gli aggiornamenti nel template
     private http: HttpClient // Invio dei blobs al BE
   ) {
     this.carica();
+    this.caricaTrascrizioneDaFile('testoProva_4.txt');
   }
 
   ngOnInit() {
@@ -53,6 +54,7 @@ export class UserForm implements OnInit {
           if (res && res.transcriptionJob && res.transcriptionJob.DisplayText) {
             this.trascrizione += ' \n ' + res.transcriptionJob.DisplayText;
             console.log('TRASCRIZIONE: ', this.trascrizione);
+            this.inviaTrascrizione();
           }
         },
         error: (err) => {
@@ -102,6 +104,7 @@ export class UserForm implements OnInit {
     }, 300); // ritardo minimo per aspettare l’ultimo chunk
   }
 
+  // Metodo che invia la trascriizone la BackEnd e popola il form
   inviaTrascrizione() {
   if (!this.trascrizioneProva.trim()) {
     alert("La trascrizione è vuota.");
@@ -110,11 +113,47 @@ export class UserForm implements OnInit {
 
     this.http.post<any>('http://localhost:3000/analizza', { testo: this.trascrizioneProva }).subscribe({
       next: (res) => {
-        console.log('Risposta dal BE (analisi GPT):', res);
-        alert('Analisi completata: ' + JSON.stringify(res));
+        if(res?.risultato) {
+          let dati;
+          try {
+            dati = JSON.parse(res.risultato);
+          } catch {
+            alert("Il formato della risposta non è un JSON valido");
+            return;
+          }
+          // Popola il modello `paziente`
+          this.paziente.name = dati.nome || '';
+          this.paziente.surname = dati.cognome || '';
+          this.paziente.birthDate = dati.data_nascita || '';
+          this.paziente.cityOfBirth = dati.luogo_nascita || '';
+          this.paziente.gender = dati.genere || '';
+          this.paziente.address = dati.indirizzo || '';
+          this.paziente.houseNumber = dati.numero_civico || '';
+          this.paziente.city = dati.citta_residenza || '';
+          this.paziente.zipCode = dati.cap || '';
+          this.paziente.email = dati.email || '';
+          this.paziente.phone = dati.telefono || '';
+
+          //alert('Form auto-compilato da trascrizione.');
+        } else {
+          alert('Nessun risultato dal modello');
+        }
       },
       error: (err) => {
-        console.error('Errore durante l\'invio della trascrizione:', err);
+        console.error("Errore durante l'invio al Modello: ", err);
+      }
+    });
+  }
+
+  caricaTrascrizioneDaFile(percorso: string) {
+    this.http.get(percorso, { responseType: 'text' }).subscribe({
+      next: (testo) => {
+        this.trascrizioneProva = testo;
+        console.log('File caricato:', testo);
+      },
+      error: (err) => {
+        console.error('Errore nel caricamento del file:', err);
+        alert('Impossibile caricare il file di trascrizione.');
       }
     });
   }

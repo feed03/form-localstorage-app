@@ -57,6 +57,17 @@
       </div>
     </div>
     
+    <div class="inline-group">
+      <div class="pair">
+        <label>Email:</label>
+        <input [(ngModel)]="paziente.email" name="email" required />
+      </div>
+      <div class="pair">
+        <label>Cellulare:</label>
+        <input [(ngModel)]="paziente.phone" name="phone" required />
+      </div>
+    </div>
+
     <div class="bottonLine">
       <button (click)="salva()">Salva</button>
       <button (click)="reset()">Reset</button>

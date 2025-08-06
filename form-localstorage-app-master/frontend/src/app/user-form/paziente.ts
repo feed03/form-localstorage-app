@@ -10,28 +10,33 @@ export class Paziente {
     houseNumber: string;
     zipCode: string;
     city: string;
+    email: string;
+    phone: string;
 
     constructor(
         nome: string = '',
         cognome: string = '',
         birthDate: Date = new Date(),
-        gender: Gender = "",
+        gender: Gender = '',
         cityOfBirth: string = '',
         address: string = '',
         houseNumber: string = '',
         zipCode: string = '',
-        city: string = '' ){
+        city: string = '' ,
+        email: string = '',
+        phone: string = ''){
         
         this.name = nome;
         this.surname = cognome;
-        this.birthDate = birthDate;
+        this.birthDate = new Date(birthDate);
         this.gender = gender;
         this.cityOfBirth = cityOfBirth;
         this.address = address;
         this.houseNumber = houseNumber;
         this.zipCode = zipCode;
         this.city = city;
-
+        this.email = email;
+        this.phone = phone;
     }
     
     //Trasformazione in string per salvataggio in memoria
@@ -39,13 +44,15 @@ export class Paziente {
         return JSON.stringify({
             nome: this.name,
             cognome: this.surname,
-            birthDate: this.birthDate.toISOString(),
+            birthDate: this.birthDate,
             gender: this.gender,
             cityOfBirth: this.cityOfBirth,
             address: this.address,
             houseNumber: this.houseNumber,
             zipCode: this.zipCode,
-            city: this.city
+            city: this.city,
+            email: this.email,
+            phone: this.phone
         });
     }
 
@@ -60,7 +67,9 @@ export class Paziente {
             obj.address,
             obj.houseNumber,
             obj.zipCode,
-            obj.city
+            obj.city,
+            obj.email,
+            obj.phone
         );
     }
 }
