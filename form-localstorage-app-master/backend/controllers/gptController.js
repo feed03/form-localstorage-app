@@ -6,25 +6,26 @@ import path from "path";
 dotenv.config();
 
 const apiKey = process.env.AZURE_OPENAI_API_KEY; // Recupera la chiave API da .env
+const endpoint = process.env.AZURE_OPENAI_API_END_POINT; // Recupera l'endPoint da .env
 
 // Configurazione del servizio
 const client = new AzureOpenAI({
-    apiKey,
-    endpoint: "https://federico-unipi-openai-resource.cognitiveservices.azure.com/", // Endpoint della risorsa Azure
+    apiKey, // Key della risorsa OPENAPI
+    endpoint, // Endpoint della risorsa Azure
     deployment: "gpt-4.1-mini", // Nome del deployment configurato su Azure
     apiVersion: "2024-04-01-preview", // Versione dell'API compatibile con il deployment
 });
 
-// Carico il contenuto del file prompt da file
+// Carico il prompt da file
 const promptPath = path.resolve("controllers/prompt.txt");
 const systemPrompt = fs.readFileSync(promptPath, "utf-8");
 
 
 // Funzione per anallizzare la trascrizione del parlato --> JSON
 export async function analizzaTrascrizione(req, res) {
-    const  { testo } = req.body;
+    const  { testo } = req.body; // Parte di trascriqzione da analizzare
     if(!testo){
-        return res.status(400).json({ error: "Testo mancante" });
+        return res.status(400).json({ error: "Testo mancante" }); 
     }
 
     try {
