@@ -45,9 +45,9 @@ export async function uploadAudio(req, res){
       fs.mkdirSync(uploadPath, {recursive: true}); // Se la rep non esiste la crea
     }
 
-    const files = fs.readdirSync(uploadPath).filter(file => file.startsWith('audio-')); // Leggi i file esistenti che iniziano con 'audio-'
-    const nextNum = (files.length + 1).toString().padStart(2, '0') // Calcolo del prossimo numero con padding a 2 cifre
-    const fileName = `audio-${nextNum}.wav`;
+    const timestamp = Date.now();
+    const fileName = `audio-${timestamp}.wav`;
+
     const finalPath = path.join(uploadPath, fileName);
 
     // Conversione WebM → WAV
@@ -68,11 +68,13 @@ export async function uploadAudio(req, res){
       maxBodyLength: Infinity
     });
 
+    fs.unlinkSync(finalPath); // Rimuove il file dopo l'invio
+
     res.status(200).json({
       message: 'Audio salvato e inviato per trascrizione.',
       transcriptionJob: response.data
     });
-
+    
   }catch(error){
     res.status(500).json({ error: "Errore nella trascrizone con Azure", details: error.toString() });
   }

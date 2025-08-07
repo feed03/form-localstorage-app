@@ -38,11 +38,13 @@ form {
 }
 
 .pair.small {
-  flex: 0 0 150px;
+  flex: 0 0 250px;
 }
 
 .pair.small input {
-  width: 60px;
+  min-width: 60px;
+  width: auto;
+  flex: 1;
 }
 
 button {

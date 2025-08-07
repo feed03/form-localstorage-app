@@ -54,7 +54,7 @@ export class UserForm implements OnInit {
           if (res && res.transcriptionJob && res.transcriptionJob.DisplayText) {
             this.trascrizione += ' \n ' + res.transcriptionJob.DisplayText;
             console.log('TRASCRIZIONE: ', this.trascrizione);
-            this.inviaTrascrizione();
+            this.inviaTrascrizione(this.trascrizione);
           }
         },
         error: (err) => {
@@ -105,13 +105,13 @@ export class UserForm implements OnInit {
   }
 
   // Metodo che invia la trascriizone la BackEnd e popola il form
-  inviaTrascrizione() {
-  if (!this.trascrizioneProva.trim()) {
+  inviaTrascrizione(temp: string) {
+  if (!temp.trim()) {
     alert("La trascrizione è vuota.");
     return;
   }
 
-    this.http.post<any>('http://localhost:3000/analizza', { testo: this.trascrizioneProva }).subscribe({
+    this.http.post<any>('http://localhost:3000/analizza', { testo: temp }).subscribe({
       next: (res) => {
         if(res?.risultato) {
           let dati;

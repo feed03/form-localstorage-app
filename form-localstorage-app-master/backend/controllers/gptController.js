@@ -17,9 +17,8 @@ const client = new AzureOpenAI({
 });
 
 // Carico il prompt da file
-const promptPath = path.resolve("controllers/prompt.txt");
+const promptPath = path.resolve("controllers/prompt.txt"); // Percorso del file del promp
 const systemPrompt = fs.readFileSync(promptPath, "utf-8");
-
 
 // Funzione per anallizzare la trascrizione del parlato --> JSON
 export async function analizzaTrascrizione(req, res) {
