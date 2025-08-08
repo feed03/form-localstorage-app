@@ -1,93 +1,110 @@
+
 <div class="form-container">
-  <h2>Inserisci i tuoi dati</h2>
+  <!-- Form a sinistra -->
+  <div class="form-wrapper">
+    <div class="form-container">
+      <form #form="ngForm" (ngSubmit)="salva(form)" novalidate>
 
-  <form>
-    
-    <div class="inline-group">
-      <div class="pair">
-        <label>Nome:</label>
-        <input [(ngModel)]="paziente.name" name="nome" required />
-      </div>
-      <div class="pair">
-        <label>Cognome:</label>
-        <input [(ngModel)]="paziente.surname" name="cognome" required />
-      </div>
+        <h2>Inserisci i tuoi dati</h2>
+        <div class="inline-group">
+          <div class="pair">
+            <label>Nome:<span style="color: red">*</span></label>
+            <input [(ngModel)]="paziente.name" name="nome" required #nomeRef="ngModel"/>
+            <div *ngIf="form.submitted && nomeRef.invalid" style="color: red"> Inserisci nome </div>
+          </div>
+          <div class="pair">
+            <label>Cognome:<span style="color: red">*</span></label>
+            <input [(ngModel)]="paziente.surname" name="cognome" required #cognomeRef="ngModel"/>
+            <div *ngIf="form.submitted && cognomeRef.invalid" style="color:red"> Inserisci cognome </div>
+          </div>
+        </div>
+
+        <div class="inline-group double">
+          <div class="pair">
+            <label>Data di nascita:<span style="color: red">*</span></label>
+            <input [(ngModel)]="paziente.birthDate" name="dataNascita" required type="date" #birthRef="ngModel"/>
+            <div *ngIf="form.submitted && (!paziente.birthDate || birthRef.invalid)" style="color:red">Inserisci data di nascita</div>
+          </div>
+          <div class="pair small">
+            <label>Genere: <span style="color: red">*</span> </label>
+            <select [(ngModel)]="paziente.gender" name="genere" required #genderRef="ngModel">
+              <option value="" disabled selected>Seleziona genere</option>
+              <option value="M">Maschile</option>
+              <option value="F">Femminile</option>
+              <option value="Altro">Altro</option>
+            </select>
+            <div *ngIf="form.submitted && genderRef.invalid" style="color:red">Inserisci genere</div>
+          </div>
+        </div>
+
+        <div class="pair">
+          <label>Città di nascita:<span style="color: red">*</span></label>
+          <input [(ngModel)]="paziente.cityOfBirth" name="cNascita" required #cityBirthRef="ngModel"/>
+          <div *ngIf="form.submitted && cityBirthRef.invalid" style="color:red">Inserisci città di nascita</div>
+        </div>
+
+        <div class="inline-group">
+          <div class="pair">
+            <label>Indirizzo:<span style="color: red">*</span></label>
+            <input [(ngModel)]="paziente.address" name="indirizzo" required #addressRef="ngModel"/>
+            <div *ngIf="form.submitted && addressRef.invalid" style="color:red">Inserisci indirizzo</div>
+          </div>
+          <div class="pair small">
+            <label>Civico:<span style="color: red">*</span></label>
+            <input [(ngModel)]="paziente.houseNumber" name="civico" required #civicoRef="ngModel"/>
+            <div *ngIf="form.submitted && civicoRef.invalid" style="color:red">Inserisci civico</div>
+          </div>
+        </div>
+
+        <div class="inline-group">
+          <div class="pair">
+            <label>Città:<span style="color: red">*</span></label>
+            <input [(ngModel)]="paziente.city" name="citta" required #cityRef="ngModel"/>
+            <div *ngIf="form.submitted && cityRef.invalid" style="color:red">Inserisci città di residenza</div>
+          </div>
+          <div class="pair small">
+            <label>CAP:<span style="color: red">*</span></label>
+            <input [(ngModel)]="paziente.zipCode" name="cap" required #capRef="ngModel"/>
+            <div *ngIf="form.submitted && capRef.invalid" style="color:red">Inserisci CAP</div>
+          </div>
+        </div>
+
+        <div class="inline-group">
+          <div class="pair">
+            <label>Email:<span style="color: red">*</span></label>
+            <input [(ngModel)]="paziente.email" name="email" required #emailRef="ngModel"/>
+            <div *ngIf="form.submitted && emailRef.invalid" style="color:red">Inserisci email</div>
+          </div>
+          <div class="pair">
+            <label>Cellulare:<span style="color: red">*</span></label>
+            <input [(ngModel)]="paziente.phone" name="phone" required #phoneRef="ngModel"/>
+            <div *ngIf="form.submitted && phoneRef.invalid" style="color:red">Inserisci Cellulare</div>
+          </div>
+        </div>
+
+        <div class="bottonLine">
+          <button type="submit">Salva</button>
+          <button type="button" (click)="reset()">Reset</button>
+        </div>
+
+        <h2>Registrazione Audio</h2>
+        
+        <div class="bottonLine">
+          <button type="button" (click)="startRecording()" [disabled]="isRecording">Avvia</button>
+          <button type="button" (click)="stopRecording()" [disabled]="!isRecording">Ferma</button>
+        </div>
+          <p *ngIf="isRecording" style="color: red;">Registrazione in corso...</p>
+
+        <button type="button" (click)="inviaTrascrizione(trascrizioneProva)">Invia trascrizione di prova</button>
+
+        <audio *ngIf="audioUrl" [src]="audioUrl" controls></audio>
+      </form>
     </div>
+  </div>
 
-    <div class="inline-group double">
-      <div class="pair">
-        <label>Data di nascita:</label>
-        <input [(ngModel)]="paziente.birthDate" name="dataNascita" required type="date" />
-      </div>
-      <div class="pair small">
-        <label>Genere:</label>
-          <select [(ngModel)]="paziente.gender" name="genere" required>
-            <option value="" disabled selected>Seleziona genere</option>
-            <option value="M">Maschile</option>
-            <option value="F">Femminile</option>
-            <option value="Altro">Altro</option>
-          </select>
-      </div>
-    </div>
-
-    <div class="pair">
-        <label>Città di nascita:</label>
-        <input [(ngModel)]="paziente.cityOfBirth" name="cNascita" required />
-    </div>
-
-    <div class="inline-group">
-      <div class="pair">
-        <label>Indirizzo:</label>
-        <input [(ngModel)]="paziente.address" name="indirizzo" required />
-      </div>
-      <div class="pair small">
-        <label>Civico:</label>
-        <input [(ngModel)]="paziente.houseNumber" name="civico" required />
-      </div>
-    </div>
-
-    <div class="inline-group">
-      <div class="pair">
-        <label>Città:</label>
-        <input [(ngModel)]="paziente.city" name="citta" required />
-      </div>
-      <div class="pair small">
-        <label>CAP:</label>
-        <input [(ngModel)]="paziente.zipCode" name="cap" required />
-      </div>
-    </div>
-    
-    <div class="inline-group">
-      <div class="pair">
-        <label>Email:</label>
-        <input [(ngModel)]="paziente.email" name="email" required />
-      </div>
-      <div class="pair">
-        <label>Cellulare:</label>
-        <input [(ngModel)]="paziente.phone" name="phone" required />
-      </div>
-    </div>
-
-    <div class="bottonLine">
-      <button (click)="salva()">Salva</button>
-      <button (click)="reset()">Reset</button>
-    </div>
-    
-
-    <div class="bottonLine">
-      <h2>Registrazione Audio</h2>
-
-        <button (click)="startRecording()" [disabled]="isRecording">Avvia</button>
-        <button (click)="stopRecording()" [disabled]="!isRecording">Ferma</button>
-    
-        <p *ngIf="isRecording" style="color: red;">Registrazione in corso...</p>
-   </div>
-    <button (click)="inviaTrascrizione(trascrizioneProva)">Invia trascrizione di prova</button>
-
-    <audio *ngIf="audioUrl" [src]="audioUrl" controls></audio>
-    <label for="trascrizione">Trascrizione</label>
-    <textarea id="trascrizione" name="trascrizione" rows="10" cols="200" [(ngModel)]="trascrizione" readonly></textarea>
-
-  </form>
+  <!-- Box trascrizione a destra -->
+  <div class="transcription-box">
+    <h2>Trascrizione</h2>
+    <textarea id="trascrizione" name="trascrizione" rows="30" [(ngModel)]="trascrizione" readonly></textarea>
+  </div>
 </div>
-   

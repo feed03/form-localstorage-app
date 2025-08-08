@@ -41,7 +41,7 @@ export async function analizzaTrascrizione(req, res) {
 
         // Restituisce il risultato come JSON al client
         res.json({ risultato: risposta });
-        console.log("Risposta GPT:", risposta);
+        //console.log("Risposta GPT:", risposta);
     } catch (err) {
     console.error("Errore durante l'invio a GPT:", err);
     res.status(500).json({ error: "Errore durante l'elaborazione GPT", details: err.tostring() });

@@ -1,6 +1,6 @@
 // Import componenti Angular
 import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 // Import servizi
@@ -65,7 +65,13 @@ export class UserForm implements OnInit {
   }
 
   // Salva localmente i dati (cache del browser)
-  salva() {
+  salva(form: NgForm) {
+    console.log('form valid?', form.valid);
+    console.log('form invalid?', form.invalid);
+
+    if (form.invalid){
+      return;
+    }
     localStorage.setItem('paziente', this.paziente.toJSON()); 
     alert('Dati salvati correttamente!');
   }

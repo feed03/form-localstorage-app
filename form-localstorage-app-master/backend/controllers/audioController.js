@@ -35,47 +35,50 @@ function convertToAzureWav(inputBuffer, outputPath) {
 
 // Gestione dell'upload dell'audio
 export async function uploadAudio(req, res){
+  const uploadPath = path.join(__dirname, '..', 'uploads'); // Percorso per la repository degli upload
+  const timestamp = Date.now(); // Timestamp per nome file univoco 
+  const fileName = `audio-${timestamp}.wav`; // Assegnazione nomefile
+  const finalPath = path.join(uploadPath, fileName); // Path dove dsalre l'audio
+
   try{
     if (!req.file) {
       return res.status(400).send('Nessun file audio ricevuto.');
     } 
 
-    const uploadPath = path.join(__dirname, '..', 'uploads'); // Percorso per la repository degli upload
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, {recursive: true}); // Se la rep non esiste la crea
     }
 
-    const timestamp = Date.now();
-    const fileName = `audio-${timestamp}.wav`;
-
-    const finalPath = path.join(uploadPath, fileName);
-
     // Conversione WebM → WAV
     await convertToAzureWav(req.file.buffer, finalPath);
-    console.log('Conversione completata:', fileName);
+    //console.log('Conversione completata:', fileName);
 
     // Invia il file convertito ad Azure Speech
     const audioData = fs.readFileSync(finalPath);
+
     const url = `https://${AZURE_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=it-IT`;
-    
+
     const response = await axios.post(url, audioData, {  // Invio richiesta POST a AzureSpeech
       headers: {
         'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY, 
         'Content-Type': 'audio/wav',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
       },
       maxContentLength: Infinity,
       maxBodyLength: Infinity
     });
 
-    fs.unlinkSync(finalPath); // Rimuove il file dopo l'invio
-
     res.status(200).json({
       message: 'Audio salvato e inviato per trascrizione.',
       transcriptionJob: response.data
     });
+
+    console.log(response.data);
     
   }catch(error){
     res.status(500).json({ error: "Errore nella trascrizone con Azure", details: error.toString() });
+  } finally {
+    // Cacncellazione del file WAV dopo l'invio anche in caso di errore
+    if (fs.existsSync(finalPath)) fs.unlinkSync(finalPath);
   }
 };

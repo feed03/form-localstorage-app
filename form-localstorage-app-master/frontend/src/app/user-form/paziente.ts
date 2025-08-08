@@ -3,7 +3,7 @@ export type Gender = "M" | "F"| ""
 export class Paziente {
     name: string;
     surname: string;
-    birthDate: Date;
+    birthDate?: Date;
     gender: Gender;
     cityOfBirth: string;
     address: string;
@@ -16,7 +16,7 @@ export class Paziente {
     constructor(
         nome: string = '',
         cognome: string = '',
-        birthDate: Date = new Date(),
+        birthDate?: Date,
         gender: Gender = '',
         cityOfBirth: string = '',
         address: string = '',
@@ -28,7 +28,7 @@ export class Paziente {
         
         this.name = nome;
         this.surname = cognome;
-        this.birthDate = new Date(birthDate);
+        this.birthDate = birthDate ? new Date(birthDate) : undefined;
         this.gender = gender;
         this.cityOfBirth = cityOfBirth;
         this.address = address;
