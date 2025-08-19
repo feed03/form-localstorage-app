@@ -1,120 +1,67 @@
-* {
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-  }
+/* Contenitore principale a due colonne */
+.form-container {
+  display: flex;
+  gap: 50px;          /* spazio tra form e box trascrizione */
+  align-items: flex-start;
+  margin: 50px;
+}
 
-  body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-  }
+/* Colonna sinistra (form) */
+.form-wrapper {
+  flex: 1;
+}
 
+/* Colonna destra (trascrizione) */
+.transcription-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Campi del form */
+.inline-group {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.inline-group.double .pair {
+  flex: 1;
+}
+
+.pair {
+  flex: 1;
+}
+
+/* Pulsanti in linea */
+.bottonLine {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+/* Larghezza piena per text area trascrizione */
+.transcription-box .w-100 {
+  width: 100%;
+}
+
+/* Responsive: una colonna sotto i 900px */
+@media (max-width: 900px) {
   .form-container {
-    display: flex;
-    height: 100vh;
-    padding: 40px;
-    background-color: #f5f5f5;
-  }
-
-  .form-wrapper {
-    width: 66.66%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .form-inner {
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    width: 100%;
-    max-width: 600px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-  }
-
-  .form-inner h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    text-align: center;
-    color: #333;
-  }
-
-  .inline-group {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-  }
-
-  .double .pair {
-    flex: 1;
-  }
-
-  .pair {
-    flex: 1;
-    display: flex;
     flex-direction: column;
   }
+}
+.azure-toolbar {
+  background-color: #d7e3ff; /* Azzurro tipico Azure */
+  color: #005cbb;
+  justify-content: center;   /* Centra il contenuto orizzontalmente */
+  font-size: 20px;
+  font-weight: 600;
+  top: 0;
+  z-index: 1000;
+}
 
-  .pair label {
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-
-  .pair input,
-  .pair select {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-
-  .pair.small {
-    max-width: 180px;
-  }
-
-  .bottonLine {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
-
-  .bottonLine button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-
-  .bottonLine button:hover {
-    background-color: #0056b3;
-  }
-
-  .bottonLine p {
-    margin-top: 10px;
-  }
-
-  .transcription-box {
-    width: 33.33%;
-    padding-left: 30px;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .transcription-box h2 {
-    margin-bottom: 10px;
-  }
-
-  .transcription-box textarea {
-    width: 100%;
-    height: 100%;
-    resize: none;
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-family: monospace;
-    background-color: #fff;
-  }
+.toolbar-title {
+  text-align: center;
+  width: 100%;
+}

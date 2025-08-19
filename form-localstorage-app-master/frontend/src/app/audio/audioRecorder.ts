@@ -16,7 +16,7 @@ export class AudioRecorder {
 
   private silenceThreshold = 10; // Soglia per considerare silenzio (Volume)
 
-  private maxSilenceTime = 1000; // Durata in ms del silenzio per considerare pausa
+  private maxSilenceTime = 750; // Durata in ms del silenzio per considerare pausa
 
   private isMonitoring = false; // Controllo sul monitorSilence
 

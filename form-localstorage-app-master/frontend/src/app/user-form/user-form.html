@@ -1,105 +1,109 @@
+<mat-toolbar class="azure-toolbar">
+  <span class="toolbar-title">Compilazione scheda cliente</span>
+</mat-toolbar>
 
 <div class="form-container">
   <!-- Form a sinistra -->
-  <div class="form-wrapper">
-    <div class="form-container">
-      <form #form="ngForm" (ngSubmit)="salva(form)" novalidate>
+<div class="form-wrapper">
+    <form (ngSubmit)="salva()">
+      
+      <h2>Inserisci i tuoi dati</h2>
+      
+      <div class="inline-group">
+        <mat-form-field class="pair" appearance="fill">
+          <mat-label>Nome</mat-label>
+          <input matInput [(ngModel)]="paziente.name" name="name">
+        </mat-form-field>
 
-        <h2>Inserisci i tuoi dati</h2>
-        <div class="inline-group">
-          <div class="pair">
-            <label>Nome:<span style="color: red">*</span></label>
-            <input [(ngModel)]="paziente.name" name="nome" required #nomeRef="ngModel"/>
-            <div *ngIf="form.submitted && nomeRef.invalid" style="color: red"> Inserisci nome </div>
-          </div>
-          <div class="pair">
-            <label>Cognome:<span style="color: red">*</span></label>
-            <input [(ngModel)]="paziente.surname" name="cognome" required #cognomeRef="ngModel"/>
-            <div *ngIf="form.submitted && cognomeRef.invalid" style="color:red"> Inserisci cognome </div>
-          </div>
-        </div>
+        <mat-form-field class="pair" appearance="fill">
+          <mat-label>Cognome</mat-label>
+          <input matInput [(ngModel)]="paziente.surname" name="surname">
+        </mat-form-field>
 
-        <div class="inline-group double">
-          <div class="pair">
-            <label>Data di nascita:<span style="color: red">*</span></label>
-            <input [(ngModel)]="paziente.birthDate" name="dataNascita" required type="date" #birthRef="ngModel"/>
-            <div *ngIf="form.submitted && (!paziente.birthDate || birthRef.invalid)" style="color:red">Inserisci data di nascita</div>
-          </div>
-          <div class="pair small">
-            <label>Genere: <span style="color: red">*</span> </label>
-            <select [(ngModel)]="paziente.gender" name="genere" required #genderRef="ngModel">
-              <option value="" disabled selected>Seleziona genere</option>
-              <option value="M">Maschile</option>
-              <option value="F">Femminile</option>
-              <option value="Altro">Altro</option>
-            </select>
-            <div *ngIf="form.submitted && genderRef.invalid" style="color:red">Inserisci genere</div>
-          </div>
-        </div>
+        <mat-form-field class="pair small" appearance="fill">
+          <mat-label>Genere</mat-label>
+          <mat-select [(ngModel)]="paziente.gender" name="gender">
+            <mat-option value="M">Maschile</mat-option>
+            <mat-option value="F">Femminile</mat-option>
+            <mat-option value="Altro">Altro</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
 
-        <div class="pair">
-          <label>Città di nascita:<span style="color: red">*</span></label>
-          <input [(ngModel)]="paziente.cityOfBirth" name="cNascita" required #cityBirthRef="ngModel"/>
-          <div *ngIf="form.submitted && cityBirthRef.invalid" style="color:red">Inserisci città di nascita</div>
-        </div>
+      <!-- Data e Città di nascita -->
+      <div class="inline-group double">
+        <mat-form-field class="pair" appearance="fill">
+          <mat-label>Data di nascita</mat-label>
+          <input matInput [matDatepicker]="picker" [(ngModel)]="paziente.birthDate" name="birthDate"/>
+          <mat-hint>MM/DD/YYYY</mat-hint>
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
 
-        <div class="inline-group">
-          <div class="pair">
-            <label>Indirizzo:<span style="color: red">*</span></label>
-            <input [(ngModel)]="paziente.address" name="indirizzo" required #addressRef="ngModel"/>
-            <div *ngIf="form.submitted && addressRef.invalid" style="color:red">Inserisci indirizzo</div>
-          </div>
-          <div class="pair small">
-            <label>Civico:<span style="color: red">*</span></label>
-            <input [(ngModel)]="paziente.houseNumber" name="civico" required #civicoRef="ngModel"/>
-            <div *ngIf="form.submitted && civicoRef.invalid" style="color:red">Inserisci civico</div>
-          </div>
-        </div>
+        <mat-form-field class="pair" appearance="fill">
+          <mat-label>Città di nascita</mat-label>
+          <input matInput [(ngModel)]="paziente.cityOfBirth" name="cityOfBirth">
+        </mat-form-field>
+      </div>
 
-        <div class="inline-group">
-          <div class="pair">
-            <label>Città:<span style="color: red">*</span></label>
-            <input [(ngModel)]="paziente.city" name="citta" required #cityRef="ngModel"/>
-            <div *ngIf="form.submitted && cityRef.invalid" style="color:red">Inserisci città di residenza</div>
-          </div>
-          <div class="pair small">
-            <label>CAP:<span style="color: red">*</span></label>
-            <input [(ngModel)]="paziente.zipCode" name="cap" required #capRef="ngModel"/>
-            <div *ngIf="form.submitted && capRef.invalid" style="color:red">Inserisci CAP</div>
-          </div>
-        </div>
+      <!-- Indirizzo e Civico -->
+      <div class="inline-group">
+        <mat-form-field class="pair" appearance="fill">
+          <mat-label>Indirizzo</mat-label>
+          <input matInput [(ngModel)]="paziente.address" name="address">
+        </mat-form-field>
 
-        <div class="inline-group">
-          <div class="pair">
-            <label>Email:<span style="color: red">*</span></label>
-            <input [(ngModel)]="paziente.email" name="email" required #emailRef="ngModel"/>
-            <div *ngIf="form.submitted && emailRef.invalid" style="color:red">Inserisci email</div>
-          </div>
-          <div class="pair">
-            <label>Cellulare:<span style="color: red">*</span></label>
-            <input [(ngModel)]="paziente.phone" name="phone" required #phoneRef="ngModel"/>
-            <div *ngIf="form.submitted && phoneRef.invalid" style="color:red">Inserisci Cellulare</div>
-          </div>
-        </div>
+        <mat-form-field class="pair" appearance="fill">
+          <mat-label>Civico</mat-label>
+          <input matInput [(ngModel)]="paziente.houseNumber" name="houseNumber">
+        </mat-form-field>
+      </div>
 
-        <div class="bottonLine">
-          <button type="submit">Salva</button>
-          <button type="button" (click)="reset()">Reset</button>
-        </div>
+       <!-- Città e CAP -->
+      <div class="inline-group">
+        <mat-form-field class="pair" appearance="fill">
+          <mat-label>Città</mat-label>
+          <input matInput [(ngModel)]="paziente.city" name="city">
+        </mat-form-field>
 
-        <h2>Registrazione Audio</h2>
-        
-        <div class="bottonLine">
-          <button type="button" (click)="startRecording()" [disabled]="isRecording">Avvia</button>
-          <button type="button" (click)="stopRecording()" [disabled]="!isRecording">Ferma</button>
-        </div>
-          <p *ngIf="isRecording" style="color: red;">Registrazione in corso...</p>
+        <mat-form-field class="pair" appearance="fill">
+          <mat-label>CAP</mat-label>
+          <input matInput [(ngModel)]="paziente.zipCode" name="zipCode">
+        </mat-form-field>
+      </div>
 
-        <button type="button" (click)="inviaTrascrizione(trascrizioneProva)">Invia trascrizione di prova</button>
+      <!-- Email e Telefono -->
+      <div class="inline-group">
+        <mat-form-field class="pair" appearance="fill">
+          <mat-label>Email</mat-label>
+          <input matInput [(ngModel)]="paziente.email" name="email" placeholder="name@example.com">
+        </mat-form-field>
 
-        <audio *ngIf="audioUrl" [src]="audioUrl" controls></audio>
-      </form>
-    </div>
+        <mat-form-field class="pair" appearance="fill">
+          <mat-label>Cellulare</mat-label>
+          <input matInput [(ngModel)]="paziente.phone" name="phone">
+        </mat-form-field>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="bottonLine">
+        <button mat-raised-button color="primary" type="submit">Salva</button>
+        <button mat-raised-button color="warn" type="button" (click)="reset()">Reset</button>
+      </div>
+
+      <h2>Registrazione Audio</h2>
+      
+      <div class="bottonLine">
+        <button type="button" (click)="startRecording()" [disabled]="isRecording">Avvia</button>
+        <button type="button" (click)="stopRecording()" [disabled]="!isRecording">Ferma</button>
+      </div>
+        <p *ngIf="isRecording" style="color: red;">Registrazione in corso...</p>
+
+      <button type="button" (click)="inviaTrascrizione(trascrizioneProva)">Invia trascrizione di prova</button>
+
+      <audio *ngIf="audioUrl" [src]="audioUrl" controls></audio>
+    </form>
   </div>
 
   <!-- Box trascrizione a destra -->

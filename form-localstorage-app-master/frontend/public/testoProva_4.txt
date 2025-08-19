@@ -1,7 +1,7 @@
 Buongiorno, possiamo iniziare con qualche informazione anagrafica? Cognome e nome, per favore.
 Federico Criscione
 Data di nascita?
-Il 5 marzo... ehm... 1986. No, aspetti, era l’85. Sì, 1985.
+Il 29 15... ehm... 1986. No, aspetti, era l’85. Sì, 1985.
 Luogo di nascita?
 Eh, questo è complicato… perché sono nato in Svizzera, a Lugano, ma sono stato registrato a Como il mese dopo. Quindi sul certificato italiano c’è scritto Como.
 Capito, segno Como per ora. Residenza attuale?
@@ -13,6 +13,6 @@ Uso più il numero svizzero, ma ho anche quello italiano… aspetti… +41 qualc
 Sesso?
 Maschio.
 Va bene, email?
-Ne ho due… quella universitaria non la uso più. Usi quella personale: dav.lo.russo@email.it.
+Ne ho due… quella universitaria non la uso più. Usi quella personale:
 Perfetto, grazie.
 Figurati.
