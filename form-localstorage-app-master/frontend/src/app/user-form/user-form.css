@@ -51,17 +51,3 @@
     flex-direction: column;
   }
 }
-.azure-toolbar {
-  background-color: #d7e3ff; /* Azzurro tipico Azure */
-  color: #005cbb;
-  justify-content: center;   /* Centra il contenuto orizzontalmente */
-  font-size: 20px;
-  font-weight: 600;
-  top: 0;
-  z-index: 1000;
-}
-
-.toolbar-title {
-  text-align: center;
-  width: 100%;
-}
