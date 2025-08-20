@@ -1,5 +1,22 @@
-<mat-toolbar color="primary">
+<mat-toolbar class="azure-toolbar">
   <span class="toolbar-title">Compilazione scheda cliente</span>
+
+  <span class="toolbar-buttons">
+    <!-- Pulsante unico microfono -->
+    <button mat-icon-button 
+            class="mic-button" 
+            (click)="isRecording ? stopRecording() : startRecording()"
+            [class.recording]="isRecording">
+      <mat-icon>{{ isRecording ? 'mic_off' : 'mic' }}</mat-icon>
+    </button>
+
+    <!-- Pulsante download audio -->
+    <button mat-icon-button 
+          (click)="downloadAudio()" 
+          [disabled]="!audioUrl || isRecording">
+      <mat-icon style="color: #005cbb;">download</mat-icon>
+    </button>
+  </span>
 </mat-toolbar>
 
 <div class="form-container">
@@ -13,11 +30,13 @@
         <mat-form-field class="pair" appearance="fill">
           <mat-label>Nome</mat-label>
           <input matInput [(ngModel)]="paziente.name" name="name">
+          <mat-icon matSuffix>person_outline</mat-icon>
         </mat-form-field>
 
         <mat-form-field class="pair" appearance="fill">
           <mat-label>Cognome</mat-label>
           <input matInput [(ngModel)]="paziente.surname" name="surname">
+          <mat-icon matSuffix>person_outline</mat-icon>
         </mat-form-field>
 
         <mat-form-field class="pair small" appearance="fill">
@@ -26,7 +45,7 @@
             <mat-option value="M">Maschile</mat-option>
             <mat-option value="F">Femminile</mat-option>
             <mat-option value="Altro">Altro</mat-option>
-          </mat-select>
+          </mat-select>          
         </mat-form-field>
       </div>
 
@@ -43,6 +62,7 @@
         <mat-form-field class="pair" appearance="fill">
           <mat-label>Città di nascita</mat-label>
           <input matInput [(ngModel)]="paziente.cityOfBirth" name="cityOfBirth">
+          <mat-icon matSuffix>location_city</mat-icon>
         </mat-form-field>
       </div>
 
@@ -51,11 +71,13 @@
         <mat-form-field class="pair" appearance="fill">
           <mat-label>Indirizzo</mat-label>
           <input matInput [(ngModel)]="paziente.address" name="address">
+          <mat-icon matSuffix>home</mat-icon>
         </mat-form-field>
 
         <mat-form-field class="pair" appearance="fill">
           <mat-label>Civico</mat-label>
           <input matInput [(ngModel)]="paziente.houseNumber" name="houseNumber">
+          <mat-icon matSuffix>pin</mat-icon>
         </mat-form-field>
       </div>
 
@@ -64,11 +86,13 @@
         <mat-form-field class="pair" appearance="fill">
           <mat-label>Città</mat-label>
           <input matInput [(ngModel)]="paziente.city" name="city">
+          <mat-icon matSuffix>location_city</mat-icon>
         </mat-form-field>
 
         <mat-form-field class="pair" appearance="fill">
           <mat-label>CAP</mat-label>
           <input matInput [(ngModel)]="paziente.zipCode" name="zipCode">
+          <mat-icon matSuffix>markunread_mailbox</mat-icon>
         </mat-form-field>
       </div>
 
@@ -77,38 +101,29 @@
         <mat-form-field class="pair" appearance="fill">
           <mat-label>Email</mat-label>
           <input matInput [(ngModel)]="paziente.email" name="email" placeholder="name@example.com">
+          <mat-icon matSuffix>email</mat-icon>
         </mat-form-field>
 
         <mat-form-field class="pair" appearance="fill">
           <mat-label>Cellulare</mat-label>
           <input matInput [(ngModel)]="paziente.phone" name="phone">
+          <mat-icon matSuffix>phone</mat-icon>
         </mat-form-field>
       </div>
 
       <mat-divider></mat-divider>
 
       <div class="bottonLine">
-        <button mat-raised-button color="primary" type="submit">Salva</button>
-        <button mat-raised-button color="warn" type="button" (click)="reset()">Reset</button>
+        <button mat-raised-button type="submit" >Salva</button>
+        <button mat-raised-button type="button" (click)="reset()" >Reset</button>
       </div>
-
-      <h2>Registrazione Audio</h2>
-      
-      <div class="bottonLine">
-        <button type="button" (click)="startRecording()" [disabled]="isRecording">Avvia</button>
-        <button type="button" (click)="stopRecording()" [disabled]="!isRecording">Ferma</button>
-      </div>
-        <p *ngIf="isRecording" style="color: red;">Registrazione in corso...</p>
-
-      <button type="button" (click)="inviaTrascrizione(trascrizioneProva)">Invia trascrizione di prova</button>
-
-      <audio *ngIf="audioUrl" [src]="audioUrl" controls></audio>
     </form>
   </div>
-
   <!-- Box trascrizione a destra -->
   <div class="transcription-box">
     <h2>Trascrizione</h2>
     <textarea id="trascrizione" name="trascrizione" rows="30" [(ngModel)]="trascrizione" readonly></textarea>
   </div>
 </div>
+
+<button type="button" (click)="inviaTrascrizione(trascrizioneProva)">Invia trascrizione di prova</button>

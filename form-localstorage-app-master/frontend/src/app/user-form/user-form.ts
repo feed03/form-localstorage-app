@@ -153,4 +153,13 @@ export class UserForm implements OnInit {
       error: err => console.error('Errore caricamento file:', err)
     });
   }
+
+  downloadAudio() {
+    if (!this.audioUrl) return;
+
+    const link = document.createElement('a');
+    link.href = this.audioUrl;
+    link.download = 'registrazione.wav';
+    link.click();
+  }
 }
