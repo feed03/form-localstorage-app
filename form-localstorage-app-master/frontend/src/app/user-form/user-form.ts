@@ -44,13 +44,16 @@ export class UserForm implements OnInit {
   isRecording: boolean = false; // tiene traccia se stiamo registrando
 
   trascrizione: string = " ";
-  trascrizioneProva: string = "";
+  trascrizioneSintetica: string = " ";
+
+  check_annulla: boolean = false;
+  first: boolean = true;
 
   constructor(private http: HttpClient) {
-    this.carica();
-    this.caricaTrascrizioneDaFile('testoProva_4.txt');
+    this.carica(); // Carica eventuali dati in cache
   }
 
+  // Metodo per l'invio del blob audio
   ngOnInit() {
     this.recorder = new AudioRecorder((blob) => { // Inizializza il recorder audio quando il componente viene caricato
       const formData = new FormData();
@@ -59,12 +62,24 @@ export class UserForm implements OnInit {
       //Invio tramite POST al backend
       this.http.post<any>('http://localhost:3000/upload-audio', formData).subscribe({
         next: (res) => {
-          console.log('FE --> Blob inviato', 'BE -->', res);
           // Salva il testo trascritto se disponibile
           if (res && res.transcriptionJob && res.transcriptionJob.DisplayText) {
-            this.trascrizione += ' \n ' + res.transcriptionJob.DisplayText;
+            const testo_Ricevuto = res.transcriptionJob.DisplayText;
+             
+            if (testo_Ricevuto.toLowerCase().includes('annulla')) {
+              this.check_annulla = true; // Rilevamento del comando annulla
+            }
+
+            this.trascrizione += ' \n ' + res.transcriptionJob.DisplayText; // Aggiorno trascrizione completa per visualizzazione a video
+            this.trascrizioneSintetica += res.transcriptionJob.DisplayText; // Aggiorno trascrizione sintetica da inviare al modello
+
             console.log('TRASCRIZIONE: ', this.trascrizione);
-            this.inviaTrascrizione(this.trascrizione);
+            if(this.first){
+              this.inviaTrascrizione(this.trascrizione); // Prima volta invio la trascrizione completa 
+              this.first = false;
+            } else {
+              this.inviaTrascrizione(this.trascrizioneSintetica); // Dalla seconda invio la trascrizione sintetica
+            }
           }
         },
         error: (err) => {
@@ -109,8 +124,6 @@ export class UserForm implements OnInit {
       const finalBlob = this.recorder.stopRec(); // Il blob completo di tutta la registrazione
 
       this.audioUrl = URL.createObjectURL(finalBlob);
-      console.log('URL audio:', this.audioUrl);
-      //this.cd.detectChanges();
     }, 300); // ritardo minimo per aspettare l’ultimo chunk
   }
 
@@ -125,17 +138,30 @@ export class UserForm implements OnInit {
         if (res?.risultato) {
           try {
             const dati = JSON.parse(res.risultato);
-            this.paziente.name = dati.nome || '';
-            this.paziente.surname = dati.cognome || '';
-            this.paziente.birthDate = dati.data_nascita || '';
-            this.paziente.cityOfBirth = dati.luogo_nascita || '';
-            this.paziente.gender = dati.genere || '';
-            this.paziente.address = dati.indirizzo || '';
-            this.paziente.houseNumber = dati.numero_civico || '';
-            this.paziente.city = dati.citta_residenza || '';
-            this.paziente.zipCode = dati.cap || '';
+            this.paziente.name = dati.name || '';
+            this.paziente.surname = dati.surname || '';
+            this.paziente.birthDate = dati.birthDate || '';
+            this.paziente.cityOfBirth = dati.cityOfBirth || '';
+            this.paziente.gender = dati.gender || '';
+            this.paziente.address = dati.address || '';
+            this.paziente.houseNumber = dati.houseNumber || '';
+            this.paziente.city = dati.city || '';
+            this.paziente.zipCode = dati.zipCode || '';
             this.paziente.email = dati.email || '';
-            this.paziente.phone = dati.telefono || '';
+            this.paziente.phone = dati.phone || '';
+            
+            if(this.check_annulla){
+              console.log("Element to reset: ", dati.updates[dati.updates.length-1]);
+              console.log("Elements before reset: ", dati.updates);
+              
+              const temp = dati.updates[dati.updates.length-1] as keyof Paziente;
+              this.resetCampo(this.paziente, temp);
+              this.check_annulla = false; // Reset della variabile di controllo
+            }
+
+            this.trascrizioneSintetica = dati.trascrizioneSintetica;
+            console.log('Riassunto: ', this.trascrizioneSintetica);
+
           } catch {
             alert("Formato risposta non valido");
           }
@@ -147,13 +173,7 @@ export class UserForm implements OnInit {
     });
   }
 
-  caricaTrascrizioneDaFile(percorso: string) {
-    this.http.get(percorso, { responseType: 'text' }).subscribe({
-      next: testo => this.trascrizioneProva = testo,
-      error: err => console.error('Errore caricamento file:', err)
-    });
-  }
-
+  // Metodo per scaricare la traccia audio completa
   downloadAudio() {
     if (!this.audioUrl) return;
 
@@ -161,5 +181,20 @@ export class UserForm implements OnInit {
     link.href = this.audioUrl;
     link.download = 'registrazione.wav';
     link.click();
+  }
+
+  // Metodo per l'effettivo reset dei Campi
+  resetCampo(p: Paziente, campo: keyof Paziente) {
+    switch (campo) {
+      case "birthDate":
+        p.birthDate = undefined;
+        break;
+      case "gender":
+        p.gender = "";
+        break;
+      default:
+        (p[campo] as string) = ""; // Tutti gli altri campi sono string
+        break;
+    }
   }
 }

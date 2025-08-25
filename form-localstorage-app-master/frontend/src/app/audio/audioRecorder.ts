@@ -134,8 +134,6 @@ export class AudioRecorder {
     
     const finalBlob = this.createBlob(this.allChunks); // Creazione blob finale
 
-    console.log('Audio finale: ', finalBlob);
-
     return finalBlob;
   }
 
