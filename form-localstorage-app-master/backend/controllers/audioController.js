@@ -51,7 +51,6 @@ export async function uploadAudio(req, res){
 
     // Conversione WebM → WAV
     await convertToAzureWav(req.file.buffer, finalPath);
-    //console.log('Conversione completata:', fileName);
 
     // Invia il file convertito ad Azure Speech
     const audioData = fs.readFileSync(finalPath);
@@ -72,13 +71,11 @@ export async function uploadAudio(req, res){
       message: 'Audio salvato e inviato per trascrizione.',
       transcriptionJob: response.data
     });
-
-    console.log(response.data);
     
   }catch(error){
     res.status(500).json({ error: "Errore nella trascrizone con Azure", details: error.toString() });
   } finally {
-    // Cacncellazione del file WAV dopo l'invio anche in caso di errore
+    // Cancellazione del file WAV dopo l'invio anche in caso di errore
     if (fs.existsSync(finalPath)) fs.unlinkSync(finalPath);
   }
 };

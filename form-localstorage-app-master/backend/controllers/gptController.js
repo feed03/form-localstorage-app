@@ -38,10 +38,10 @@ export async function analizzaTrascrizione(req, res) {
         temperature: 0 // Nessuna creatività
     });
         const risposta = response.choices[0]?.message?.content?.trim(); // Estrae il contenuto testuale della risposta
+        console.log("Risposta GPT:", risposta);
 
-        // Restituisce il risultato come JSON al client
+        // Restituisce il risultato come JSON al frontend
         res.json({ risultato: risposta });
-        //console.log("Risposta GPT:", risposta);
     } catch (err) {
     console.error("Errore durante l'invio a GPT:", err);
     res.status(500).json({ error: "Errore durante l'elaborazione GPT", details: err.tostring() });
