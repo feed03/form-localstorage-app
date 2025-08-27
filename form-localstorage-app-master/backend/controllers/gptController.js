@@ -1,7 +1,7 @@
 import { AzureOpenAI } from "openai";
 import dotenv from "dotenv";
 import fs from "fs";
-import path from "path";
+import path, { parse } from "path";
 
 dotenv.config();
 
@@ -16,13 +16,14 @@ const client = new AzureOpenAI({
     apiVersion: "2024-04-01-preview", // Versione dell'API compatibile con il deployment
 });
 
-// Carico il prompt da file
-const promptPath = path.resolve("controllers/prompt.txt"); // Percorso del file del promp
-const systemPrompt = fs.readFileSync(promptPath, "utf-8");
+// Carico i due prompt
+const promptAnagrafica = fs.readFileSync(path.resolve("controllers/promptAnagrafica.txt"), "utf-8");
+const promptAnamnesi = fs.readFileSync(path.resolve("controllers/promptAnamnesi.txt"), "utf-8");
+let systemPrompt = promptAnagrafica; // Inizio con prompt anagrafica
 
 // Funzione per anallizzare la trascrizione del parlato --> JSON
 export async function analizzaTrascrizione(req, res) {
-    const  { testo } = req.body; // Parte di trascriqzione da analizzare
+    const testo = req.body.testo; // Parte di trascrizione da analizzare
     if(!testo){
         return res.status(400).json({ error: "Testo mancante" }); 
     }
@@ -40,8 +41,15 @@ export async function analizzaTrascrizione(req, res) {
         const risposta = response.choices[0]?.message?.content?.trim(); // Estrae il contenuto testuale della risposta
         console.log("Risposta GPT:", risposta);
 
-        // Restituisce il risultato come JSON al frontend
-        res.json({ risultato: risposta });
+        let parsed = JSON.parse(risposta);
+        console.log("Contesto ", parsed.action);
+
+        // Cambio prompt in base all'azione
+        systemPrompt = parsed.action === "anamnesi" ? promptAnamnesi : promptAnagrafica;
+
+        console.log("Testo da inviare", testo);
+
+        res.json({ risultato: risposta }); // Restituisco il risultato della chiamata
     } catch (err) {
     console.error("Errore durante l'invio a GPT:", err);
     res.status(500).json({ error: "Errore durante l'elaborazione GPT", details: err.tostring() });

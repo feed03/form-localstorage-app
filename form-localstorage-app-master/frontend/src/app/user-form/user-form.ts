@@ -17,6 +17,8 @@ import { MatOptionModule, provideNativeDateAdapter } from '@angular/material/cor
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatRadioModule } from '@angular/material/radio';
 
 
 @Component({
@@ -29,7 +31,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     MatButtonModule, MatIconModule,
     MatSelectModule, MatOptionModule,
     MatDatepickerModule, MatDividerModule,
-    FormsModule, MatToolbarModule
+    FormsModule, MatToolbarModule,
+    MatCheckboxModule, MatRadioModule
   ],
     
   templateUrl: './user-form.html',
@@ -44,7 +47,10 @@ export class UserForm implements OnInit {
   isRecording: boolean = false; // tiene traccia se stiamo registrando
 
   trascrizione: string = " ";
-  trascrizioneSintetica: string = " ";
+  trascrizioneSinteticaAnagrafica: string = " ";
+  trascrizioneSinteticaAnamnesi: string = " ";
+
+  action: string = "anagrafica";
 
   check_annulla: boolean = false;
   first: boolean = true;
@@ -70,15 +76,20 @@ export class UserForm implements OnInit {
               this.check_annulla = true; // Rilevamento del comando annulla
             }
 
-            this.trascrizione += ' \n ' + res.transcriptionJob.DisplayText; // Aggiorno trascrizione completa per visualizzazione a video
-            this.trascrizioneSintetica += res.transcriptionJob.DisplayText; // Aggiorno trascrizione sintetica da inviare al modello
+            this.trascrizione += ' \n ' + testo_Ricevuto; // Aggiorno trascrizione completa per visualizzazione a video
 
-            console.log('TRASCRIZIONE: ', this.trascrizione);
+            console.log('TRASCRIZIONE: ', this.trascrizioneSinteticaAnagrafica);
             if(this.first){
               this.inviaTrascrizione(this.trascrizione); // Prima volta invio la trascrizione completa 
               this.first = false;
             } else {
-              this.inviaTrascrizione(this.trascrizioneSintetica); // Dalla seconda invio la trascrizione sintetica
+              if (this.action == "anagrafica"){
+                this.trascrizioneSinteticaAnagrafica += testo_Ricevuto; // Aggiorno trascrizione Anagrafica
+                this.inviaTrascrizione(this.trascrizioneSinteticaAnagrafica);
+              } else {
+                this.trascrizioneSinteticaAnamnesi += testo_Ricevuto; // Aggiorno trascrizione Anamnesi
+                this.inviaTrascrizione(this.trascrizioneSinteticaAnamnesi);
+              }
             }
           }
         },
@@ -91,7 +102,8 @@ export class UserForm implements OnInit {
 
   // Salva localmente i dati (cache del browser)
   salva() {
-    localStorage.setItem('paziente', this.paziente.toJSON()); 
+    console.log("SALVA CHIAMATO", this.paziente);
+    localStorage.setItem('paziente', JSON.stringify(this.paziente)); 
     alert('Dati salvati correttamente!');
   }
   
@@ -137,31 +149,19 @@ export class UserForm implements OnInit {
       next: (res) => {
         if (res?.risultato) {
           try {
-            const dati = JSON.parse(res.risultato);
-            this.paziente.name = dati.name || '';
-            this.paziente.surname = dati.surname || '';
-            this.paziente.birthDate = dati.birthDate || '';
-            this.paziente.cityOfBirth = dati.cityOfBirth || '';
-            this.paziente.gender = dati.gender || '';
-            this.paziente.address = dati.address || '';
-            this.paziente.houseNumber = dati.houseNumber || '';
-            this.paziente.city = dati.city || '';
-            this.paziente.zipCode = dati.zipCode || '';
-            this.paziente.email = dati.email || '';
-            this.paziente.phone = dati.phone || '';
-            
-            if(this.check_annulla){
-              console.log("Element to reset: ", dati.updates[dati.updates.length-1]);
-              console.log("Elements before reset: ", dati.updates);
-              
-              const temp = dati.updates[dati.updates.length-1] as keyof Paziente;
-              this.resetCampo(this.paziente, temp);
-              this.check_annulla = false; // Reset della variabile di controllo
+            const parsed = JSON.parse(res.risultato);
+
+            // Ricevo risposta dal modello
+            if(parsed.action == "anagrafica"){
+              this.fillAnagrafica(res.risultato);
+              this.trascrizioneSinteticaAnagrafica = parsed.trascrizioneSintetica;
+              this.action = "anagrafica";
+            } else if(parsed.action == "anamnesi"){
+              console.log("Inserisci fillAnamnesi");
+              this.trascrizioneSinteticaAnamnesi = parsed.trascrizioneSintetica;
+              this.action = "anamnesi";
             }
-
-            this.trascrizioneSintetica = dati.trascrizioneSintetica;
-            console.log('Riassunto: ', this.trascrizioneSintetica);
-
+            console.log(parsed.trascrizioneSintetica);
           } catch {
             alert("Formato risposta non valido");
           }
@@ -195,6 +195,36 @@ export class UserForm implements OnInit {
       default:
         (p[campo] as string) = ""; // Tutti gli altri campi sono string
         break;
+    }
+  }
+
+  // Metodo per riempire l'anagrafica
+ fillAnagrafica(aggiornamentiStr: string) {
+  const aggiornamenti = JSON.parse(aggiornamentiStr) as Partial<Paziente>;
+
+    for (const key in aggiornamenti) {
+      if (aggiornamenti[key as keyof Paziente] != null) {
+        const campo = key as keyof Paziente;
+        
+          switch (campo) {
+          case "birthDate":
+            this.paziente.birthDate = aggiornamenti.birthDate;
+          break;
+          
+          case "gender":
+            if (aggiornamenti.gender !== undefined) {
+              const g = aggiornamenti.gender;
+              if (g === "M" || g === "F" || g === "") {
+                this.paziente.gender = g; // ora TypeScript sa che non è undefined
+              }
+            }
+          break;
+          
+          default:
+            (this.paziente[campo] as string) = (aggiornamenti[campo] as string); // Tutti gli altri campi sono string
+          break;
+        }
+      }
     }
   }
 }

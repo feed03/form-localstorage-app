@@ -14,18 +14,23 @@
     <button mat-icon-button 
           (click)="downloadAudio()" 
           [disabled]="!audioUrl || isRecording">
-      <mat-icon style="color: #005cbb;">download</mat-icon>
+      <mat-icon style="color: #003a7a;">download</mat-icon>
     </button>
   </span>
 </mat-toolbar>
-
+<!-- Parte superiore: form + anamnesi -->
 <div class="form-container">
-  <!-- Form a sinistra -->
-<div class="form-wrapper">
-    <form (ngSubmit)="salva()">
-      
+  <div class="transcription-box">
+    <textarea id="trascrizione" name="trascrizione" rows="30" [(ngModel)]="trascrizione" readonly></textarea>
+  </div>
+  <div class="top-section">
+  <!-- Form completo -->
+  <div class="form-wrapper">
+    <div class="form-column">
+      <form (ngSubmit)="salva()">
       <h2>Inserisci i tuoi dati</h2>
-      
+
+      <!-- Nome, Cognome, Genere -->
       <div class="inline-group">
         <mat-form-field class="pair" appearance="fill">
           <mat-label>Nome</mat-label>
@@ -45,11 +50,11 @@
             <mat-option value="M">Maschile</mat-option>
             <mat-option value="F">Femminile</mat-option>
             <mat-option value="Altro">Altro</mat-option>
-          </mat-select>          
+          </mat-select>
         </mat-form-field>
       </div>
 
-      <!-- Data e Città di nascita -->
+      <!-- Data e città di nascita -->
       <div class="inline-group double">
         <mat-form-field class="pair" appearance="fill">
           <mat-label>Data di nascita</mat-label>
@@ -81,7 +86,7 @@
         </mat-form-field>
       </div>
 
-       <!-- Città e CAP -->
+      <!-- Città e CAP -->
       <div class="inline-group">
         <mat-form-field class="pair" appearance="fill">
           <mat-label>Città</mat-label>
@@ -109,19 +114,111 @@
           <input matInput [(ngModel)]="paziente.phone" name="phone">
           <mat-icon matSuffix>phone</mat-icon>
         </mat-form-field>
+        </div>
+        <!-- Bottoni di invio e reset -->
+        <div class="bottonLine">
+        <button mat-raised-button type="submit">Salva</button>
+        <button mat-raised-button type="button" (click)="reset()">Reset</button>
       </div>
+      </form>
+    </div>
+    </div>
 
       <mat-divider></mat-divider>
 
-      <div class="bottonLine">
-        <button mat-raised-button type="submit" >Salva</button>
-        <button mat-raised-button type="button" (click)="reset()" >Reset</button>
+      <!-- Anamnesi -->
+      <div class="anamnesi-column">
+        <h2>Anamnesi</h2>
+        <div class="anamnesi-grid">
+          <!-- Colonna 1 -->
+          <div class="anamnesi-subcolumn">
+            <h3>Malattie</h3>
+            <mat-checkbox [(ngModel)]="paziente.malattie.cardiopatia" name="cardiopatia">Cardiopatia</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.pacemaker" name="pacemaker">Pacemaker</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.ipertensione" name="ipertensione">Ipertensione</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.ipotensione" name="ipotensione">Ipotensione</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.svenimenti" name="svenimenti">Tendenza agli svenimenti</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.emorragie" name="emorragie">Disturbi emorragici</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.reumatismi" name="reumatismi">Reumatismi</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.diabete" name="diabete">Diabete</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.tiroide" name="tiroide">Malattie tiroidee</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.malattie_organi_interni" name="organi">Malattie organi interni</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.malattie_stomaco" name="stomaco">Malattie stomaco</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.malattie_respiratorie" name="respiratorie">Malattie respiratorie</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.epilessia" name="epilessia">Epilessia</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.osteoporosi" name="osteoporosi">Osteoporosi</mat-checkbox>
+
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Altre malattie</mat-label>
+              <input matInput [(ngModel)]="paziente.malattie.altre_malattie" name="altre_malattie">
+            </mat-form-field>
+          </div>
+
+          <!-- Colonna 2 -->
+          <div class="anamnesi-subcolumn">
+            <h3>Allergie</h3>
+            <mat-checkbox [(ngModel)]="paziente.allergie.antibiotici" name="antibiotici">Antibiotici</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.allergie.anestetici_locali" name="anestetici">Anestetici locali</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.allergie.lattice" name="lattice">Lattice</mat-checkbox>
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Altre allergie</mat-label>
+              <input matInput [(ngModel)]="paziente.allergie.altre_allergie" name="altre_allergie">
+            </mat-form-field>
+
+            <h3>Infezioni</h3>
+            <mat-checkbox [(ngModel)]="paziente.infezioni.epatite" name="epatite">Epatite</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.infezioni.tubercolosi" name="tubercolosi">Tubercolosi</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.infezioni.hiv" name="hiv">HIV</mat-checkbox>
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Altre infezioni</mat-label>
+              <input matInput [(ngModel)]="paziente.infezioni.altre_infezioni" name="altre_infezioni">
+            </mat-form-field>
+
+            <h3>Gravidanza</h3> 
+            <mat-checkbox [(ngModel)]="paziente.stato_gravidanza.si" name="gravidanza">Gravidanza</mat-checkbox> 
+            <div *ngIf="paziente.stato_gravidanza.si" class="nested-field"> 
+              <mat-form-field appearance="fill" class="full-width"> 
+                <mat-label>Settimane</mat-label> 
+                <input matInput type="number" [(ngModel)]="paziente.stato_gravidanza.settimane" name="settimane"> 
+              </mat-form-field> 
+            </div>
+          </div>
+
+          <!-- Colonna 3 -->
+          <div class="anamnesi-subcolumn">
+            <h3>Farmaci</h3>
+            <mat-checkbox [(ngModel)]="paziente.farmaci.marcumar" name="marcumar">Anticoagulanti</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.farmaci.ass" name="ass">Antipertensivi</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.farmaci.anticoagulanti" name="anticoagulanti">Antibiotici</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.farmaci.bisfosfonati" name="bisfosfonati">Antinfiammatori</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.farmaci.anticoagulanti_orali" name="anticoagulanti_orali">Antidepressivi</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.farmaci.reazioni_farmaci" name="reazioni_farmaci">Reazioni farmaci</mat-checkbox>
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Altri farmaci</mat-label>
+              <input matInput [(ngModel)]="paziente.farmaci.altri_farmaci" name="altri_farmaci">
+            </mat-form-field>
+            <h3>Altro</h3>
+            <mat-checkbox [(ngModel)]="paziente.altro.fumatore" name="fumatore">
+              Fumatore
+            </mat-checkbox>
+
+            <div *ngIf="paziente.altro.fumatore" class="nested-field">
+              <mat-checkbox 
+                [(ngModel)]="paziente.altro.piu_10_sigarette"
+                (change)="paziente.altro.meno_10_sigarette = false"
+                name="piu10">
+                Più di 10 sigarette al giorno
+              </mat-checkbox>
+
+              <mat-checkbox 
+                [(ngModel)]="paziente.altro.meno_10_sigarette"
+                (change)="paziente.altro.piu_10_sigarette = false"
+                name="meno10">
+                Meno di 10 sigarette al giorno
+              </mat-checkbox>
+            </div>
+          </div>
+        </div>
       </div>
-    </form>
+    </div>
   </div>
-  <!-- Box trascrizione a destra -->
-  <div class="transcription-box">
-    <h2>Trascrizione</h2>
-    <textarea id="trascrizione" name="trascrizione" rows="30" [(ngModel)]="trascrizione" readonly></textarea>
-  </div>
-</div>

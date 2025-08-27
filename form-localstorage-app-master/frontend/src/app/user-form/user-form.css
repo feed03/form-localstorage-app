@@ -1,54 +1,73 @@
 /* Titolo toolbar */
 .toolbar-title {
-  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; 
+  font-family: 'Trebuchet MS', Arial, sans-serif; 
   font-size: 30px;
 }
 
 /* Container generale */
 .form-container {
   display: flex;
+  flex-direction: column;
   gap: 20px;
   padding: 20px;
   background-color: #f3f7ff; 
   min-height: calc(100vh - 64px); 
-  align-items: flex-start;
+  align-items: stretch;
 }
 
-/* Wrapper per il form */
+/* Sezione superiore - form e anamnesi affiancati */
+.top-section {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Wrapper form e anamnesi - 50% ciascuno */
 .form-wrapper {
-  flex: 2;
   background: white;
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
-  height: 600px;
-  max-height: 100%;
+  min-height: 600px;
+  flex: 1;
+  width: 50%;
 }
 
-/* Box trascrizione allineata al form */
-.transcription-box {
-  flex: 1.3;
-  background: #ffffff;
+.anamnesi-column {
+  background: white;
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  height: 600px;
-  max-height: 100%;
+  min-height: 600px;
+  flex: 1;
+  width: 50%;
 }
 
-/* Animazione box durante registrazione */
+/* Box trascrizione */
+.transcription-box {
+  background: #ffffff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  height: 150px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .transcription-box.recording {
   box-shadow: 0 0 20px rgba(0, 92, 187, 0.6);
   border: 2px solid #005cbb;
 }
 
 .transcription-box textarea {
-  width: 97%;
+  width: 100%;
   flex: 1;
   resize: none;
   padding: 10px;
@@ -58,23 +77,19 @@
   font-size: 14px;
   background-color: #fafcff;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
-/* Inline groups per i campi */
+/* Gruppi inline */
 .inline-group {
   display: flex;
   gap: 16px;
   margin-bottom: 16px;
 }
 
-.inline-group.double {
-  flex-wrap: wrap;
-}
-
 .pair {
   flex: 1;
 }
-
 .pair.small {
   max-width: 150px;
 }
@@ -86,24 +101,14 @@
   margin: 16px 0;
 }
 
-.form-wrapper h2,
-.transcription-box h2 {
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-  color: #003a7a;
-}
-
 button[mat-raised-button] {
   background-color: #d7e3ff;
   color: #003a7a;
   font-weight: 500;
 }
-
-/* Hover normale */
 button[mat-raised-button]:hover:not(:disabled) {
   background-color: #c4d3f7;
 }
-
-/* Bottone disabilitato */
 button[mat-raised-button][disabled] {
   background-color: #e0e0e0;
   color: #9e9e9e;
@@ -116,14 +121,12 @@ button[mat-raised-button][disabled] {
   color: #003a7a;           
   font-weight: bold;
   padding: 0 16px;
-  transition: background-color 0.3s;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .toolbar-buttons {
-  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -131,45 +134,120 @@ button[mat-raised-button][disabled] {
 
 /* Pulsante microfono */
 .mic-button {
-  position: relative;
   font-size: 28px;
-  transition: transform 0.2s ease;
 }
-
 .mic-button mat-icon {
-  color: #005cbb; /* blu per mic */
+  color: #003a7a;
   transition: color 0.3s ease;
 }
-
 .mic-button.recording mat-icon {
-  color: #ff4c4c; /* rosso per mic_off */
+  color: #ff4c4c;
   animation: pulse 1s infinite;
 }
-
-/* Animazione pulsante */
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.2); }
   100% { transform: scale(1); }
 }
 
-/* Pulsante download */
-.download-button mat-icon {
-  color: #005cbb; /* stesso colore mic */
-  font-size: 28px;
-}
-
-.download-button[disabled] mat-icon {
-  color: #9e9e9e;
-}
-
 /* Icone */
 .form-wrapper mat-icon,
+.anamnesi-column mat-icon,
 .transcription-box mat-icon {
   color: #005cbb;
 }
 
-/* Icona calendario*/
+/* Datepicker */
 .mat-datepicker-toggle {
   color: #005cbb;
+}
+
+/* Checkbox - spazio ridotto al minimo */
+.nested-field mat-checkbox,
+.anamnesi-subcolumn mat-checkbox {
+  margin-bottom: 0px !important;
+  margin-top: 0px !important;
+}
+
+/* Riduci padding e margini interni delle checkbox */
+::ng-deep .mat-checkbox {
+  margin-bottom: 2px !important;
+}
+
+::ng-deep .mat-checkbox-layout {
+  margin-bottom: 0px !important;
+}
+
+/* Anamnesi grid */
+.anamnesi-grid {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.anamnesi-subcolumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  min-width: 150px;
+  flex: 1;
+}
+
+/* Riduci margini tra sezioni h3 */
+.anamnesi-subcolumn h3 {
+  margin-top: 15px;
+  margin-bottom: 5px;
+  font-size: 16px;
+}
+
+.anamnesi-subcolumn h3:first-child {
+  margin-top: 0;
+}
+
+/* Field full-width per input text nelle sezioni anamnesi */
+.full-width {
+  width: 100%;
+  margin-top: 5px !important;
+  margin-bottom: 8px !important;
+}
+
+/* Nested field per elementi condizionali */
+.nested-field {
+  margin-left: 20px;
+  margin-top: 2px;
+}
+
+/* Responsive per schermi piccoli */
+@media (max-width: 768px) {
+  .top-section {
+    flex-direction: column;
+  }
+  
+  .form-wrapper,
+  .anamnesi-column {
+    width: 100%;
+  }
+  
+  /* Mantieni sempre 3 colonne nell'anamnesi anche su mobile */
+  .anamnesi-grid {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .anamnesi-subcolumn {
+    min-width: 120px;
+    font-size: 14px;
+  }
+  
+  /* Riduci dimensioni h3 su mobile per risparmiare spazio */
+  .anamnesi-subcolumn h3 {
+    font-size: 14px;
+    margin-top: 10px;
+    margin-bottom: 3px;
+  }
+}
+
+.top-section h2, h3 {
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  color: #003a7a;
 }
