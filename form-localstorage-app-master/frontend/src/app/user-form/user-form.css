@@ -251,3 +251,10 @@ button[mat-raised-button][disabled] {
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   color: #003a7a;
 }
+
+.highlight-border {
+  outline: 2px solid #003a7a; /* bordo esterno */
+  outline-offset: 1px; /* avvicina o allontana il bordo dal box */
+  padding: 20px;
+  border-radius: 12px;
+}

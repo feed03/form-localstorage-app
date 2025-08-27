@@ -40,6 +40,7 @@ import { MatRadioModule } from '@angular/material/radio';
 })
 
 export class UserForm implements OnInit {
+
   paziente: Paziente = new Paziente();
 
   recorder!: AudioRecorder; // Oggetto per la gestione dell'audio
@@ -47,8 +48,7 @@ export class UserForm implements OnInit {
   isRecording: boolean = false; // tiene traccia se stiamo registrando
 
   trascrizione: string = " ";
-  trascrizioneSinteticaAnagrafica: string = " ";
-  trascrizioneSinteticaAnamnesi: string = " ";
+  trascrizioneSintetica: string = " ";
 
   action: string = "anagrafica";
 
@@ -78,18 +78,12 @@ export class UserForm implements OnInit {
 
             this.trascrizione += ' \n ' + testo_Ricevuto; // Aggiorno trascrizione completa per visualizzazione a video
 
-            console.log('TRASCRIZIONE: ', this.trascrizioneSinteticaAnagrafica);
             if(this.first){
               this.inviaTrascrizione(this.trascrizione); // Prima volta invio la trascrizione completa 
               this.first = false;
             } else {
-              if (this.action == "anagrafica"){
-                this.trascrizioneSinteticaAnagrafica += testo_Ricevuto; // Aggiorno trascrizione Anagrafica
-                this.inviaTrascrizione(this.trascrizioneSinteticaAnagrafica);
-              } else {
-                this.trascrizioneSinteticaAnamnesi += testo_Ricevuto; // Aggiorno trascrizione Anamnesi
-                this.inviaTrascrizione(this.trascrizioneSinteticaAnamnesi);
-              }
+                this.trascrizioneSintetica += testo_Ricevuto; // Aggiorno trascrizione Anagrafica
+                this.inviaTrascrizione(this.trascrizioneSintetica);
             }
           }
         },
@@ -102,7 +96,6 @@ export class UserForm implements OnInit {
 
   // Salva localmente i dati (cache del browser)
   salva() {
-    console.log("SALVA CHIAMATO", this.paziente);
     localStorage.setItem('paziente', JSON.stringify(this.paziente)); 
     alert('Dati salvati correttamente!');
   }
@@ -153,15 +146,13 @@ export class UserForm implements OnInit {
 
             // Ricevo risposta dal modello
             if(parsed.action == "anagrafica"){
-              this.fillAnagrafica(res.risultato);
-              this.trascrizioneSinteticaAnagrafica = parsed.trascrizioneSintetica;
               this.action = "anagrafica";
             } else if(parsed.action == "anamnesi"){
-              console.log("Inserisci fillAnamnesi");
-              this.trascrizioneSinteticaAnamnesi = parsed.trascrizioneSintetica;
               this.action = "anamnesi";
             }
-            console.log(parsed.trascrizioneSintetica);
+
+            this.fillAnagraficaAnamnesi(res.risultato); // Metodo che popola sia l'anagrafica che l'anamnesi
+            this.trascrizioneSintetica = parsed.trascrizioneSintetica; // Aggiorno trascrizione
           } catch {
             alert("Formato risposta non valido");
           }
@@ -199,11 +190,12 @@ export class UserForm implements OnInit {
   }
 
   // Metodo per riempire l'anagrafica
- fillAnagrafica(aggiornamentiStr: string) {
+ fillAnagraficaAnamnesi(aggiornamentiStr: string) {
   const aggiornamenti = JSON.parse(aggiornamentiStr) as Partial<Paziente>;
 
     for (const key in aggiornamenti) {
-      if (aggiornamenti[key as keyof Paziente] != null) {
+      const value = aggiornamenti[key as keyof Paziente];
+      if (value == null) continue;
         const campo = key as keyof Paziente;
         
           switch (campo) {
@@ -212,19 +204,18 @@ export class UserForm implements OnInit {
           break;
           
           case "gender":
-            if (aggiornamenti.gender !== undefined) {
+            if (aggiornamenti.gender !== undefined) { // Controllo sul valore
               const g = aggiornamenti.gender;
               if (g === "M" || g === "F" || g === "") {
-                this.paziente.gender = g; // ora TypeScript sa che non è undefined
+                this.paziente.gender = g;
               }
             }
           break;
           
           default:
-            (this.paziente[campo] as string) = (aggiornamenti[campo] as string); // Tutti gli altri campi sono string
+            (this.paziente[campo] as string) = (aggiornamenti[campo] as string); // Tutti gli altri campi sono string/boolean
           break;
         }
-      }
     }
   }
 }

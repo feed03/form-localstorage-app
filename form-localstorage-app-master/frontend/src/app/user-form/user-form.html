@@ -25,7 +25,7 @@
   </div>
   <div class="top-section">
   <!-- Form completo -->
-  <div class="form-wrapper">
+  <div class="form-wrapper" [ngClass]="{'highlight-border': action === 'anagrafica'}">
     <div class="form-column">
       <form (ngSubmit)="salva()">
       <h2>Inserisci i tuoi dati</h2>
@@ -127,7 +127,7 @@
       <mat-divider></mat-divider>
 
       <!-- Anamnesi -->
-      <div class="anamnesi-column">
+      <div class="anamnesi-column"  [ngClass]="{'highlight-border': action === 'anamnesi'}">
         <h2>Anamnesi</h2>
         <div class="anamnesi-grid">
           <!-- Colonna 1 -->
