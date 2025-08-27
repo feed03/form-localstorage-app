@@ -39,7 +39,7 @@ export async function analizzaTrascrizione(req, res) {
         temperature: 0 // Nessuna creatività
     });
         const risposta = response.choices[0]?.message?.content?.trim(); // Estrae il contenuto testuale della risposta
-        console.log("Risposta GPT:", risposta);
+        console.log("---------------------------------------------");
 
         let parsed = JSON.parse(risposta);
         console.log("Contesto ", parsed.action);
@@ -48,6 +48,8 @@ export async function analizzaTrascrizione(req, res) {
         systemPrompt = parsed.action === "anamnesi" ? promptAnamnesi : promptAnagrafica;
 
         console.log("Testo da inviare", testo);
+        console.log("Risposta GPT:", risposta);
+        console.log("---------------------------------------------");
 
         res.json({ risultato: risposta }); // Restituisco il risultato della chiamata
     } catch (err) {
