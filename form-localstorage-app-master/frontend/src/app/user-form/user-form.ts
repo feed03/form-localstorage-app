@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -19,6 +19,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
+import { timestamp } from 'rxjs';
 
 
 @Component({
@@ -50,6 +51,8 @@ export class UserForm implements OnInit {
   trascrizione: string = " ";
   trascrizioneSintetica: string = " ";
 
+   @ViewChild('trascrizioneBox') private trascrizioneBox!: ElementRef;
+
   action: string = "anagrafica";
 
   check_annulla: boolean = false;
@@ -62,9 +65,14 @@ export class UserForm implements OnInit {
   // Metodo per l'invio del blob audio
   ngOnInit() {
     this.recorder = new AudioRecorder((blob) => { // Inizializza il recorder audio quando il componente viene caricato
+      
       const formData = new FormData();
       formData.append('audio', blob, 'audio.webm');
-
+    
+      // Controllo se il formData ha effettivamente dei file
+      if (blob.size <= 12800) {
+        return; // Non fare la chiamata se non c'è audio
+      }
       //Invio tramite POST al backend
       this.http.post<any>('http://localhost:3000/upload-audio', formData).subscribe({
         next: (res) => {
@@ -83,7 +91,9 @@ export class UserForm implements OnInit {
               this.first = false;
             } else {
                 this.trascrizioneSintetica += testo_Ricevuto; // Aggiorno trascrizione Anagrafica
+                console.log("Start trascription: ", Date.now());
                 this.inviaTrascrizione(this.trascrizioneSintetica);
+                console.log("End trascription: ", Date.now());
             }
           }
         },
@@ -144,15 +154,17 @@ export class UserForm implements OnInit {
           try {
             const parsed = JSON.parse(res.risultato);
 
-            // Ricevo risposta dal modello
+            // Cambio contesto per spostare il focus nell'interfaccia
             if(parsed.action == "anagrafica"){
               this.action = "anagrafica";
             } else if(parsed.action == "anamnesi"){
-              this.action = "anamnesi";
+              this.action = "anamnesi"; 
             }
-
+          
             this.fillAnagraficaAnamnesi(res.risultato); // Metodo che popola sia l'anagrafica che l'anamnesi
-            this.trascrizioneSintetica = parsed.trascrizioneSintetica; // Aggiorno trascrizione
+            if(parsed.trascrizioneSintetica != ""){
+              this.trascrizioneSintetica = parsed.trascrizioneSintetica; // Aggiorno trascrizione
+            }
           } catch {
             alert("Formato risposta non valido");
           }
@@ -214,8 +226,26 @@ export class UserForm implements OnInit {
           
           default:
             (this.paziente[campo] as string) = (aggiornamenti[campo] as string); // Tutti gli altri campi sono string/boolean
+            console.log("Fill campo ", Date.now());
           break;
         }
     }
+  }
+
+  // Metodi per lo scroll della textArea
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  private scrollToBottom(): void {
+    const element = this.trascrizioneBox.nativeElement;
+    element.scrollTop = element.scrollHeight;
+  }
+
+  // Aggiorno lo stato di gravidanza se 
+  onGenderChange() {
+    if (this.paziente.gender === 'M') {
+      this.paziente.stato_gravidanza = { sconosciuto: false, no: true, si: false, settimane: null };
+    } 
   }
 }

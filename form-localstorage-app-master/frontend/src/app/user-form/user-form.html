@@ -21,7 +21,7 @@
 <!-- Parte superiore: form + anamnesi -->
 <div class="form-container">
   <div class="transcription-box">
-    <textarea id="trascrizione" name="trascrizione" rows="30" [(ngModel)]="trascrizione" readonly></textarea>
+    <textarea #trascrizioneBox id="trascrizione" name="trascrizione" rows="30" [(ngModel)]="trascrizione" readonly> </textarea>
   </div>
   <div class="top-section">
   <!-- Form completo -->
@@ -46,7 +46,7 @@
 
         <mat-form-field class="pair small" appearance="fill">
           <mat-label>Genere</mat-label>
-          <mat-select [(ngModel)]="paziente.gender" name="gender">
+          <mat-select [(ngModel)]="paziente.gender" name="gender" (selectionChange)="onGenderChange()">
             <mat-option value="M">Maschile</mat-option>
             <mat-option value="F">Femminile</mat-option>
             <mat-option value="Altro">Altro</mat-option>
@@ -143,7 +143,7 @@
             <mat-checkbox [(ngModel)]="paziente.malattie.diabete" name="diabete">Diabete</mat-checkbox>
             <mat-checkbox [(ngModel)]="paziente.malattie.tiroide" name="tiroide">Malattie tiroidee</mat-checkbox>
             <mat-checkbox [(ngModel)]="paziente.malattie.malattie_organi_interni" name="organi">Malattie organi interni</mat-checkbox>
-            <mat-checkbox [(ngModel)]="paziente.malattie.malattie_stomaco" name="stomaco">Malattie stomaco</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.malattie.malattie_stomaco_intestino" name="stomaco">Malattie stomaco</mat-checkbox>
             <mat-checkbox [(ngModel)]="paziente.malattie.malattie_respiratorie" name="respiratorie">Malattie respiratorie</mat-checkbox>
             <mat-checkbox [(ngModel)]="paziente.malattie.epilessia" name="epilessia">Epilessia</mat-checkbox>
             <mat-checkbox [(ngModel)]="paziente.malattie.osteoporosi" name="osteoporosi">Osteoporosi</mat-checkbox>
@@ -174,24 +174,39 @@
               <input matInput [(ngModel)]="paziente.infezioni.altre_infezioni" name="altre_infezioni">
             </mat-form-field>
 
-            <h3>Gravidanza</h3> 
-            <mat-checkbox [(ngModel)]="paziente.stato_gravidanza.si" name="gravidanza">Gravidanza</mat-checkbox> 
-            <div *ngIf="paziente.stato_gravidanza.si" class="nested-field"> 
-              <mat-form-field appearance="fill" class="full-width"> 
-                <mat-label>Settimane</mat-label> 
-                <input matInput type="number" [(ngModel)]="paziente.stato_gravidanza.settimane" name="settimane"> 
-              </mat-form-field> 
+            
+            <h3>Gravidanza</h3>
+            <mat-radio-group name="gravidanza">
+              <mat-radio-button value="sconosciuto" 
+                                [checked]="paziente.stato_gravidanza.sconosciuto" 
+                                (change)="paziente.stato_gravidanza = {sconosciuto: true, no: false, si: false, settimane: null}"> Sconosciuto
+              </mat-radio-button>
+              <mat-radio-button value="no" 
+                                [checked]="paziente.stato_gravidanza.no" 
+                                (change)="paziente.stato_gravidanza = {sconosciuto: false, no: true, si: false, settimane: null}"> No
+              </mat-radio-button>
+              <mat-radio-button value="si" 
+                                [checked]="paziente.stato_gravidanza.si" 
+                                (change)="paziente.stato_gravidanza = {sconosciuto: false, no: false, si: true, settimane: null}"> Sì
+            </mat-radio-button>
+            </mat-radio-group>
+
+            <div *ngIf="paziente.stato_gravidanza.si" class="nested-field">
+              <mat-form-field appearance="fill" class="full-width">
+                <mat-label>Settimane</mat-label>
+                <input matInput type="number" [(ngModel)]="paziente.stato_gravidanza.settimane" name="settimane">
+              </mat-form-field>
             </div>
           </div>
 
           <!-- Colonna 3 -->
           <div class="anamnesi-subcolumn">
             <h3>Farmaci</h3>
-            <mat-checkbox [(ngModel)]="paziente.farmaci.marcumar" name="marcumar">Anticoagulanti</mat-checkbox>
-            <mat-checkbox [(ngModel)]="paziente.farmaci.ass" name="ass">Antipertensivi</mat-checkbox>
-            <mat-checkbox [(ngModel)]="paziente.farmaci.anticoagulanti" name="anticoagulanti">Antibiotici</mat-checkbox>
-            <mat-checkbox [(ngModel)]="paziente.farmaci.bisfosfonati" name="bisfosfonati">Antinfiammatori</mat-checkbox>
-            <mat-checkbox [(ngModel)]="paziente.farmaci.anticoagulanti_orali" name="anticoagulanti_orali">Antidepressivi</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.farmaci.marcumar" name="marcumar">Marcumar</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.farmaci.ass" name="ass">ASS</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.farmaci.anticoagulanti" name="anticoagulanti">Anticoagulanti</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.farmaci.bisfosfonati" name="bisfosfonati">Bisfosfonati</mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.farmaci.anticoagulanti_orali" name="anticoagulanti_orali">Anticoagulanti orali</mat-checkbox>
             <mat-checkbox [(ngModel)]="paziente.farmaci.reazioni_farmaci" name="reazioni_farmaci">Reazioni farmaci</mat-checkbox>
             <mat-form-field appearance="fill" class="full-width">
               <mat-label>Altri farmaci</mat-label>
@@ -203,19 +218,19 @@
             </mat-checkbox>
 
             <div *ngIf="paziente.altro.fumatore" class="nested-field">
-              <mat-checkbox 
-                [(ngModel)]="paziente.altro.piu_10_sigarette"
-                (change)="paziente.altro.meno_10_sigarette = false"
-                name="piu10">
-                Più di 10 sigarette al giorno
-              </mat-checkbox>
-
-              <mat-checkbox 
-                [(ngModel)]="paziente.altro.meno_10_sigarette"
-                (change)="paziente.altro.piu_10_sigarette = false"
-                name="meno10">
-                Meno di 10 sigarette al giorno
-              </mat-checkbox>
+              <mat-radio-group name="sigarette">
+                <mat-radio-button 
+                  value="piu10"
+                  [checked]="paziente.altro.piu_10_sigarette"
+                  (change)="paziente.altro.piu_10_sigarette = true; paziente.altro.meno_10_sigarette = false"> Più di 10 sigarette al giorno
+                </mat-radio-button>
+                
+                <mat-radio-button 
+                  value="meno10"
+                  [checked]="paziente.altro.meno_10_sigarette"
+                  (change)="paziente.altro.meno_10_sigarette = true; paziente.altro.piu_10_sigarette = false"> Meno di 10 sigarette al giorno
+                </mat-radio-button>
+              </mat-radio-group>
             </div>
           </div>
         </div>

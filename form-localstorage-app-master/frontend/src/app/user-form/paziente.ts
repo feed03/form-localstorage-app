@@ -11,7 +11,7 @@ export interface Malattie {
   diabete: boolean;
   tiroide: boolean;
   malattie_organi_interni: boolean;
-  malattie_stomaco: boolean;
+  malattie_stomaco_intestino: boolean;
   malattie_respiratorie: boolean;
   epilessia: boolean;
   osteoporosi: boolean;
@@ -33,6 +33,8 @@ export interface Infezioni {
 }
 
 export interface StatoGravidanza {
+  sconosciuto: boolean;
+  no: boolean;
   si: boolean;
   settimane: number | null;
 }
@@ -112,7 +114,7 @@ export class Paziente {
       diabete: false,
       tiroide: false,
       malattie_organi_interni: false,
-      malattie_stomaco: false,
+      malattie_stomaco_intestino: false,
       malattie_respiratorie: false,
       epilessia: false,
       osteoporosi: false,
@@ -134,6 +136,8 @@ export class Paziente {
     };
 
     this.stato_gravidanza = {
+      sconosciuto: false,
+      no: false,
       si: false,
       settimane: null
     };

@@ -1,7 +1,7 @@
 import { AzureOpenAI } from "openai";
 import dotenv from "dotenv";
 import fs from "fs";
-import path, { parse } from "path";
+import path from "path";
 
 dotenv.config();
 
@@ -49,12 +49,13 @@ export async function analizzaTrascrizione(req, res) {
 
         console.log("Testo da inviare", testo);
         console.log("Risposta GPT:", risposta);
+        console.log("Time: ", Date.now());
         console.log("---------------------------------------------");
 
         res.json({ risultato: risposta }); // Restituisco il risultato della chiamata
     } catch (err) {
     console.error("Errore durante l'invio a GPT:", err);
-    res.status(500).json({ error: "Errore durante l'elaborazione GPT", details: err.tostring() });
+    res.status(500).json({ error: "Errore durante l'elaborazione GPT", details: err.toString() });
   }
 }
 
