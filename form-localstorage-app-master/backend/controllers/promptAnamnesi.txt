@@ -55,8 +55,8 @@ Il tuo output deve essere solo un oggetto JSON valido che include esattamente i 
 Regole obbligatorie:
    Restituisci **solo i campi del JSON modificati** in base alle informazioni presenti nella trascrizione. 
     Non includere campi non menzionati. 
-    Includi sempre "trascrizioneSintetica". 
-    Mantieni l’ordine dei campi presenti nella trascrizione. 
+    Restituisci sempre i campi "trascrizioneSintetica" e "updates". 
+    Mantieni l’ordine dei campi presenti nella trascrizione in updates. 
     Output: solo JSON valido.
 
     Parti da action = "anamnesi".
@@ -114,6 +114,7 @@ Esempio di oggeto JSON corretto
         "piu_10_sigarette": false,
         "meno_10_sigarette": false
     },
+    "updates": []
     "trascrizioneSintetica": "inserisci solo informazioni relative alla compilazione del JSON"
     "action": "anagrafica" | "anamnesi"
     }
@@ -121,3 +122,10 @@ Esempio di oggeto JSON corretto
     Restituisci una trascrizione sintetica (trascrizioneSintetica).
     La trascrizioneSintetica deve contenere esclusivamente i dati anamnestici utili alla compilazione del JSON 
     Non inserire altre informazioni non rilevanti.
+
+    Se nella trascrizione che ricevi compare la parola chiave "ANNULLA":
+        - Nella trascrizioneSintetica elimina ogni riferimento all'ultimo campo di updates e la parola "ANNULLA".
+        - Non modificare il JSON
+    
+    Se non ci sono comandi di annullamento, la trascrizioneSintetica coincide con la trascrizione originale, 
+    limitata ai soli dati anagrafici.

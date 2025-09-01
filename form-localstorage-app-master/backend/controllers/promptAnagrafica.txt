@@ -18,25 +18,33 @@ Il tuo output deve essere solo un oggetto JSON valido che include esattamente i 
         - trascrizioneSintetica
         - action
 
-Valorizzazione campi
-    - nome: includi anche il secondo nome, se presente
-    - data_nascita: formato obbligatorio YYYY-MM-DD
-        - Esempio: "23 luglio 80" --> "1980-07-23"
-    - genere: valorizzalo solo se esplicitamente indicato, con una delle 3 opzioni: M, F, Altro
-    - luogo_nascita e citta_residenza: inserisci solo il nome della città, ignora zone, quartieri.
+Regole di valorizzazione dei campi:
+- "name": includi anche il secondo nome, se presente.
+- "birthDate": formato obbligatorio YYYY-MM-DD (es. "23 luglio 80" → "1980-07-23").
+- "gender": valorizzalo solo se esplicitamente indicato, con una delle opzioni: M, F, Altro.
+- "cityOfBirth" e "city": inserisci solo il nome della città, ignora zone o quartieri.
 
 Regole obbligatorie:
     Restituisci **solo i campi del JSON modificati** in base alle informazioni presenti nella trascrizione. 
-    Non includere campi non menzionati. 
-    Includi sempre "trascrizioneSintetica". 
-    Mantieni l’ordine dei campi presenti nella trascrizione. 
-    Output: solo JSON valido.
+    Restituisci sempre i campi "updates", "trascrizioneSintetica" e "action".
+    Non includere campi non menzionati.  
+    In "updates" conserva sempre la lista completa dei campi compilati finora, nell'ordine in cui sono presenti nella trascrizione, può essere diverso dall'ordine del JSON.
 
-    Restituisci anche l'ordine in cui hai modificato o aggiornato i campi, segui esempio
+Gestione comando "ANNULLA":
+    - Se nella trascrizione compare la parola chiave "ANNULLA":
+        - Nella trascrizioneSintetica ELIMINA ogni riferimento all'ultimo campo di updates e la parola "ANNULLA".
+        - Non modificare il JSON
+        - Nel campo updates mantieni i campi citati nella trascrizione che ricevi in input
 
+Gestione action:
     Parti da action = "anagrafica".
     Se nel dialogo ci sono frasi come "compilazione anamnesi", "ora facciamo un'anamnesi", "passiamo all'anamnesi", allora imposta action = "anamnesi".
     Se non ci sono frasi di cambio, mantieni action = "anagrafica".
+
+Trascrizione sintetica (trascrizioneSintetica)
+    Deve contenere solo i dati anagrafici e anamnestici utili alla compilazione del JSON e, se presenti, dati anamnestici.
+    Non inserire altre informazioni non rilevanti.
+    Mantieni l'ordine di modifica quando riassumi la trascrizione, ovvero l'ordine del campo updates
 
 Esempio di oggetto JSON corretto  
     {
@@ -51,19 +59,7 @@ Esempio di oggetto JSON corretto
         "zipCode": "97100",
         "email": "prova.123@gmail.com",
         "phone": "3336589566"
-        "updates": ["nome", "cognome", "luogo_nascita", "data_nascita"]
+        "updates": ["name", "surname", "cityOfBirth", "birthDate"]
         "trascrizioneSintetica": "inserisci solo informazioni relative alla compilazione del JSON"
         "action": "anagrafica" | "anamnesi"
     }
-
-    Restituisci una trascrizione sintetica (trascrizioneSintetica).
-    La trascrizioneSintetica deve contenere esclusivamente i dati anagrafici utili alla compilazione del JSON
-    e anche gli eventuali dati anamnestici 
-    Non inserire altre informazioni non rilevanti.
-
-    Se nella trascrizione compare la parola chiave "ANNULLA":
-        - Nella trascrizioneSintetica elimina ogni riferimento all'ultimo campo di updates e la parola "ANNULLA".
-        - Non modificare il JSON
-    
-    Se non ci sono comandi di annullamento, la trascrizioneSintetica coincide con la trascrizione originale, 
-    limitata ai soli dati anagrafici.

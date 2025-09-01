@@ -48,9 +48,10 @@ export class UserForm implements OnInit {
   audioUrl: string | null = null; // URL generato per ascoltare l'audio generato
   isRecording: boolean = false; // tiene traccia se stiamo registrando
 
-  trascrizione: string = " ";
-  trascrizioneSintetica: string = " ";
-
+  trascrizione: string = " "; // Trascrizione completo per visualizzazione nella textArea
+  trascrizioneSintetica: string = " "; // Trascrizione aggiornata a runTime per inviare al modello
+  update: string = " ";
+  
    @ViewChild('trascrizioneBox') private trascrizioneBox!: ElementRef;
 
   action: string = "anagrafica";
@@ -78,9 +79,10 @@ export class UserForm implements OnInit {
         next: (res) => {
           // Salva il testo trascritto se disponibile
           if (res && res.transcriptionJob && res.transcriptionJob.DisplayText) {
-            const testo_Ricevuto = res.transcriptionJob.DisplayText;
+            const testo_Ricevuto = res.transcriptionJob.DisplayText; // Ultima parte di trascrizione ricevuto
              
             if (testo_Ricevuto.toLowerCase().includes('annulla')) {
+              console.log("Annulla rilevato");
               this.check_annulla = true; // Rilevamento del comando annulla
             }
 
@@ -90,10 +92,8 @@ export class UserForm implements OnInit {
               this.inviaTrascrizione(this.trascrizione); // Prima volta invio la trascrizione completa 
               this.first = false;
             } else {
-                this.trascrizioneSintetica += testo_Ricevuto; // Aggiorno trascrizione Anagrafica
-                console.log("Start trascription: ", Date.now());
-                this.inviaTrascrizione(this.trascrizioneSintetica);
-                console.log("End trascription: ", Date.now());
+                this.trascrizioneSintetica += testo_Ricevuto; // Aggiungi
+                this.inviaTrascrizione(this.trascrizioneSintetica); // Invio della trascrizione la BE
             }
           }
         },
@@ -148,7 +148,7 @@ export class UserForm implements OnInit {
       alert("La trascrizione è vuota.");
       return;
     }
-    this.http.post<any>('http://localhost:3000/analizza', { testo }).subscribe({
+    this.http.post<any>('http://localhost:3000/analizza', { testo }).subscribe({ // Chiamata per inviare la trascrizione al BE
       next: (res) => {
         if (res?.risultato) {
           try {
@@ -161,12 +161,26 @@ export class UserForm implements OnInit {
               this.action = "anamnesi"; 
             }
           
-            this.fillAnagraficaAnamnesi(res.risultato); // Metodo che popola sia l'anagrafica che l'anamnesi
+            this.fillAnagraficaAnamnesi(parsed); // Metodo che popola sia l'anagrafica che l'anamnesi
             if(parsed.trascrizioneSintetica != ""){
+              console.log(parsed);
               this.trascrizioneSintetica = parsed.trascrizioneSintetica; // Aggiorno trascrizione
+              this.update = parsed.updates[parsed.updates.length - 1]; // Salvo l'ultimo elemento modificato
+              console.log(this.update);
             }
-          } catch {
-            alert("Formato risposta non valido");
+            
+            // Sistema
+            if(this.check_annulla){
+              console.log("Annulla rilevato, resetto campo: ", this.update);
+              this.resetCampo(this.update as keyof Paziente);
+              this.check_annulla = false;
+            } else {
+              this.update = parsed.updates[parsed.updates.length - 1]; // Salvo l'ultimo elemento modificato
+              console.log("Ultimo campo", this.update);
+            }
+           
+          } catch (err) {
+            alert("Formato risposta non valido" + err);
           }
         } else {
           alert('Nessun risultato dal modello');
@@ -187,24 +201,23 @@ export class UserForm implements OnInit {
   }
 
   // Metodo per l'effettivo reset dei Campi
-  resetCampo(p: Paziente, campo: keyof Paziente) {
+  resetCampo(campo: keyof Paziente) {
     switch (campo) {
       case "birthDate":
-        p.birthDate = undefined;
+        this.paziente.birthDate = undefined;
         break;
       case "gender":
-        p.gender = "";
+        this.paziente.gender = "";
         break;
       default:
-        (p[campo] as string) = ""; // Tutti gli altri campi sono string
+        (this.paziente[campo] as string) = ""; // Tutti gli altri campi sono string
+        console.log("Campo annullato");
         break;
     }
   }
 
   // Metodo per riempire l'anagrafica
- fillAnagraficaAnamnesi(aggiornamentiStr: string) {
-  const aggiornamenti = JSON.parse(aggiornamentiStr) as Partial<Paziente>;
-
+ fillAnagraficaAnamnesi(aggiornamenti: Partial<Paziente>) {
     for (const key in aggiornamenti) {
       const value = aggiornamenti[key as keyof Paziente];
       if (value == null) continue;
@@ -226,7 +239,6 @@ export class UserForm implements OnInit {
           
           default:
             (this.paziente[campo] as string) = (aggiornamenti[campo] as string); // Tutti gli altri campi sono string/boolean
-            console.log("Fill campo ", Date.now());
           break;
         }
     }

@@ -21,15 +21,15 @@ const promptAnagrafica = fs.readFileSync(path.resolve("controllers/promptAnagraf
 const promptAnamnesi = fs.readFileSync(path.resolve("controllers/promptAnamnesi.txt"), "utf-8");
 let systemPrompt = promptAnagrafica; // Inizio con prompt anagrafica
 
-// Funzione per anallizzare la trascrizione del parlato --> JSON
+// Invio della trascrizone al modello, restituisce al client il risultato aggiornato
 export async function analizzaTrascrizione(req, res) {
-    const testo = req.body.testo; // Parte di trascrizione da analizzare
+    const testo = req.body.testo; // Trascrizione da inviare al modello, ricevuta dal FE
     if(!testo){
         return res.status(400).json({ error: "Testo mancante" }); 
     }
 
     try {
-        // Richiesta al modello GPT per analizzare il testo
+        // Chiamata al modello 
         const response = await client.chat.completions.create({
         messages: [
             { role: "system", content: systemPrompt}, // Contiene il prompt per istruire il modello
@@ -42,17 +42,15 @@ export async function analizzaTrascrizione(req, res) {
         console.log("---------------------------------------------");
 
         let parsed = JSON.parse(risposta);
-        console.log("Contesto ", parsed.action);
 
-        // Cambio prompt in base all'azione
-        systemPrompt = parsed.action === "anamnesi" ? promptAnamnesi : promptAnagrafica;
+        systemPrompt = parsed.action === "anamnesi" ? promptAnamnesi : promptAnagrafica; // Cambio del prompt in base al campo action
 
         console.log("Testo da inviare", testo);
         console.log("Risposta GPT:", risposta);
         console.log("Time: ", Date.now());
         console.log("---------------------------------------------");
 
-        res.json({ risultato: risposta }); // Restituisco il risultato della chiamata
+        res.json({ risultato: risposta }); // Ritorna al FE il risultato ottenuto dal modello
     } catch (err) {
     console.error("Errore durante l'invio a GPT:", err);
     res.status(500).json({ error: "Errore durante l'elaborazione GPT", details: err.toString() });
