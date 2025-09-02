@@ -49,12 +49,10 @@ export class UserForm implements OnInit {
   isRecording: boolean = false; // tiene traccia se stiamo registrando
 
   trascrizione: string = " "; // Trascrizione completo per visualizzazione nella textArea
-  trascrizioneSintetica: string = " "; // Trascrizione aggiornata a runTime per inviare al modello
-  update: string = " ";
   
    @ViewChild('trascrizioneBox') private trascrizioneBox!: ElementRef;
 
-  action: string = "anagrafica";
+  contex: string = "anagrafica";
 
   check_annulla: boolean = false;
   first: boolean = true;
@@ -80,21 +78,10 @@ export class UserForm implements OnInit {
           // Salva il testo trascritto se disponibile
           if (res && res.transcriptionJob && res.transcriptionJob.DisplayText) {
             const testo_Ricevuto = res.transcriptionJob.DisplayText; // Ultima parte di trascrizione ricevuto
-             
-            if (testo_Ricevuto.toLowerCase().includes('annulla')) {
-              console.log("Annulla rilevato");
-              this.check_annulla = true; // Rilevamento del comando annulla
-            }
 
             this.trascrizione += ' \n ' + testo_Ricevuto; // Aggiorno trascrizione completa per visualizzazione a video
 
-            if(this.first){
-              this.inviaTrascrizione(this.trascrizione); // Prima volta invio la trascrizione completa 
-              this.first = false;
-            } else {
-                this.trascrizioneSintetica += testo_Ricevuto; // Aggiungi
-                this.inviaTrascrizione(this.trascrizioneSintetica); // Invio della trascrizione la BE
-            }
+            this.inviaTrascrizione(testo_Ricevuto); // Invio trascrizone al BE
           }
         },
         error: (err) => {
@@ -155,30 +142,21 @@ export class UserForm implements OnInit {
             const parsed = JSON.parse(res.risultato);
 
             // Cambio contesto per spostare il focus nell'interfaccia
-            if(parsed.action == "anagrafica"){
-              this.action = "anagrafica";
-            } else if(parsed.action == "anamnesi"){
-              this.action = "anamnesi"; 
-            }
-          
-            this.fillAnagraficaAnamnesi(parsed); // Metodo che popola sia l'anagrafica che l'anamnesi
-            if(parsed.trascrizioneSintetica != ""){
-              console.log(parsed);
-              this.trascrizioneSintetica = parsed.trascrizioneSintetica; // Aggiorno trascrizione
-              this.update = parsed.updates[parsed.updates.length - 1]; // Salvo l'ultimo elemento modificato
-              console.log(this.update);
+            if(parsed.contex == "anagrafica"){
+              this.contex = "anagrafica";
+            } else if(parsed.contex == "anamnesi"){
+              this.contex = "anamnesi"; 
             }
             
-            // Sistema
-            if(this.check_annulla){
-              console.log("Annulla rilevato, resetto campo: ", this.update);
-              this.resetCampo(this.update as keyof Paziente);
-              this.check_annulla = false;
-            } else {
-              this.update = parsed.updates[parsed.updates.length - 1]; // Salvo l'ultimo elemento modificato
-              console.log("Ultimo campo", this.update);
+            if("action" in parsed){
+              if(parsed.action === "compila"){
+                this.fillAnagraficaAnamnesi(parsed); // Metodo che popola sia l'anagrafica che l'anamnesi
+              } else {
+                console.log("Elementi da resettare: ", parsed)
+                this.resetCampo(parsed); // Metodo che annulla ripristina i campi
+              }
             }
-           
+            
           } catch (err) {
             alert("Formato risposta non valido" + err);
           }
@@ -201,18 +179,25 @@ export class UserForm implements OnInit {
   }
 
   // Metodo per l'effettivo reset dei Campi
-  resetCampo(campo: keyof Paziente) {
-    switch (campo) {
-      case "birthDate":
-        this.paziente.birthDate = undefined;
-        break;
-      case "gender":
-        this.paziente.gender = "";
-        break;
-      default:
-        (this.paziente[campo] as string) = ""; // Tutti gli altri campi sono string
-        console.log("Campo annullato");
-        break;
+  resetCampo(reset: Partial<Paziente>) {
+    for (const key in reset) {
+      
+      const value = reset[key as keyof Paziente];
+      if (value == null) continue;
+      
+      const campo = key as keyof Paziente;
+      switch (campo) {
+        case "birthDate":
+          this.paziente.birthDate = undefined;
+          break;
+        case "gender":
+          this.paziente.gender = "";
+          break;
+        default:
+          (this.paziente[campo] as string) = ""; // Tutti gli altri campi sono string
+          console.log("Campo annullato");
+          break;
+      }
     }
   }
 
@@ -254,7 +239,7 @@ export class UserForm implements OnInit {
     element.scrollTop = element.scrollHeight;
   }
 
-  // Aggiorno lo stato di gravidanza se 
+  // Aggiorno lo stato di gravidanza a No se il genere e maschile
   onGenderChange() {
     if (this.paziente.gender === 'M') {
       this.paziente.stato_gravidanza = { sconosciuto: false, no: true, si: false, settimane: null };
