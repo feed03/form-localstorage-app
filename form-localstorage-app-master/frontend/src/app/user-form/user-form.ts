@@ -52,7 +52,7 @@ export class UserForm implements OnInit {
   
    @ViewChild('trascrizioneBox') private trascrizioneBox!: ElementRef;
 
-  contex: string = "anagrafica";
+  context: string = "anagrafica";
 
   check_annulla: boolean = false;
   first: boolean = true;
@@ -142,10 +142,10 @@ export class UserForm implements OnInit {
             const parsed = JSON.parse(res.risultato);
 
             // Cambio contesto per spostare il focus nell'interfaccia
-            if(parsed.contex == "anagrafica"){
-              this.contex = "anagrafica";
-            } else if(parsed.contex == "anamnesi"){
-              this.contex = "anamnesi"; 
+            if(parsed.context == "anagrafica"){
+              this.context = "anagrafica";
+            } else if(parsed.context == "anamnesi"){
+              this.context = "anamnesi"; 
             }
             
             if("action" in parsed){

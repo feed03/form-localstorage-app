@@ -16,22 +16,24 @@ const client = new AzureOpenAI({
     apiVersion: "2024-04-01-preview", // Versione dell'API compatibile con il deployment
 });
 
-// Carico i due prompt
+// Carico i due prompt anagrafica e anamnesi
 const promptAnagrafica = fs.readFileSync(path.resolve("controllers/promptAnagrafica.txt"), "utf-8");
 const promptAnamnesi = fs.readFileSync(path.resolve("controllers/promptAnamnesi.txt"), "utf-8");
-let systemPrompt = promptAnagrafica; // Inizio con prompt anagrafica
+let systemPrompt = promptAnagrafica;
+
+// Inizializzo lo storico delle frasi e il JSON di backup per il comando annulla 
 let storico = [];
 let JSONBackup;
 
-// Invio della trascrizone al modello, restituisce al client il risultato aggiornato
+// Invio della trascrizone al modello
 export async function analizzaTrascrizione(req, res) {
-    const testo = req.body.testo; // Trascrizione da inviare al modello, ricevuta dal FE
+    const testo = req.body.testo; // Ultimo pezzo di trascrizione ricevuto dal FE
     
     if(!testo){
         return res.status(400).json({ error: "Testo mancante" }); 
     }
 
-    // Costruisco i messaggi da inviare al modello
+    // Costruisco il messaggio da inviare al modello
     const messages = [
         { role: "system", content: systemPrompt },
         // Aggiungo l'ultima frase come ultimo messaggio e lo storico
@@ -43,7 +45,7 @@ export async function analizzaTrascrizione(req, res) {
             ${testo}` 
         }
     ];
-
+    
     console.log("Testo da analizzare: ", testo);
     console.log("Storico: ", storico);
 
@@ -57,19 +59,19 @@ export async function analizzaTrascrizione(req, res) {
        
         const risposta = response.choices[0]?.message?.content?.trim(); // Estrae il contenuto testuale della risposta
         let parsed = JSON.parse(risposta); // Parsed del JSON, per accesso ai campi        
-        systemPrompt = parsed.contex === "anamnesi" ? promptAnamnesi : promptAnagrafica; // Cambio del prompt in base al campo action
+        systemPrompt = parsed.context === "anamnesi" ? promptAnamnesi : promptAnagrafica; // Cambio del prompt in base al campo action
 
         if("action" in parsed){
-            if(parsed.action === "compila"){
+            if(parsed.action === "compila" &&  "phrase" in parsed){ // Case nel quale ci sono dei campi da aggiornare
                 JSONBackup = parsed; // Salvo il JSON per poterlo ripristinare in caso di ANNULLA
-                storico.push(parsed.phrases); // Aggiorno lo storico con l'ultima frase riassuntiva
+                storico.push(parsed.phrase); // Aggiorno lo storico con l'ultima frase riassuntiva
                 
                 console.log("---------------------------------------------");
                 console.log("Risposta GPT:", risposta);
                 console.log("---------------------------------------------");
                 
                 res.json({ risultato: risposta }); // Ritorna al FE il risultato ottenuto dal modello
-            } else{
+            } else if(parsed.action === "annulla"){
                 // Caso annulla, recupero l'ultimo JSON
                 if (JSONBackup) {
                     
@@ -83,6 +85,11 @@ export async function analizzaTrascrizione(req, res) {
                     storico.pop(); // Elimino l'ultimo elemento dello storico
                     res.json({ risultato: JSON.stringify(annullaJSON) });
                 }
+            } else  {
+                console.log("---------------------------------------------");
+                console.log("Risposta GPT:", risposta);
+                console.log("---------------------------------------------");
+                res.json({ risultato: risposta }); // Ritorna al FE il risultato ottenuto dal modello
             }
         } else{
             console.log("---------------------------------------------");

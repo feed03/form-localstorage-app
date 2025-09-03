@@ -20,7 +20,7 @@ L'output deve essere un JSON valido, i campi consentiti sono esattamente:
         - phone
         - phrase
         - action
-        - contex
+        - context
 
 Regole di valorizzazione dei campi:
     - "name": includi anche il secondo nome, se presente.
@@ -30,24 +30,29 @@ Regole di valorizzazione dei campi:
 
 Regole obbligatorie:
     Restituisci un **JSON parziale** contenente solo i campi per i quali ci sono informazioni esplicite nell’ultima frase 
-    Inserisci nel campo phrases un riassunto della trascrizione, se la trascrizione non contiene dati inerenti all'anagrafica non inserire niente.
+    Inserisci nel campo phrase un riassunto della trascrizione, se la trascrizione non contiene dati inerenti all'anagrafica non inserire niente.
     Se la trascrizione non è chiara su un campo dell'anagrafica non inserire niente 
     Non includere alcun campo non menzionato.   
 
 Gestione phrase:
     Inserisci un riassunto della trascrizione per compilazione del form, matenendo solo i dati inerenti all'anagrafica, elimina tutto ciò che non riguarda l'anagrafica
 
-Gestione aciton:
+Gestione action:
     Parti da action = "compila".
     Se nella trascrizione è presenta la parola "annulla", allora imposta action = "annulla"
-    Se action = "annulla" restituisci il JSON con solo il campo aciton 
-    Se action = "compila" e non aggiorni campi dell'anagrafica restituisci il JSON con solo il campo contex
+    Se action = "annulla" restituisci il JSON con solo il campo action 
+    Se action = "compila" e non aggiorni campi dell'anagrafica restituisci il JSON con solo il campo context
     Se non ci sono frasi di cambio, mantieni action = "compila".
 
-Gestione contex:
-    Parti da contex = "anagrafica".
-    Se nel dialogo ci sono frasi come "compilazione anamnesi", "ora facciamo un'anamnesi", "passiamo all'anamnesi", allora imposta contex = "anamnesi".
-    Se non ci sono frasi di cambio, mantieni contex = "anagrafica".
+Gestione context:
+    Parti da context = "anagrafica".
+    Aggiorna context = "anamnesi" solo se ricevi le seguenti frasi:
+        - "compilazione anamnesi"
+        - "ora facciamo un'anamnesi"
+        - "passiamo all'anamnesi"
+        - "torniamo all'anamnesi"
+        - "anamnesi"
+    Se non ci sono frasi di cambio, mantieni context = "anagrafica".
 
 Esempio di oggetto JSON corretto  
     {
@@ -62,7 +67,7 @@ Esempio di oggetto JSON corretto
         "zipCode": "97100",
         "email": "prova.123@gmail.com",
         "phone": "3336589566"
-        "phrases": "nome Federico"
+        "phrase": "nome Federico"
         "action": "compila"
-        "contex": "anagrafica"
+        "context": "anagrafica"
     }
