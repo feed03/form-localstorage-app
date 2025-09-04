@@ -16,14 +16,50 @@ const client = new AzureOpenAI({
     apiVersion: "2024-04-01-preview", // Versione dell'API compatibile con il deployment
 });
 
+// Constants
+const PROMPT_PATHS = {
+    ANAGRAFICA: "controllers/promptAnagrafica.txt",
+    ANAMNESI: "controllers/promptAnamnesi.txt"
+};
+
+// Azioni e contesti
+const ACTIONS = { COMPILA: "compila", ANNULLA: "annulla" };
+const CONTEXTS = { ANAGRAFICA: "anagrafica", ANAMNESI: "anamnesi" };
+
+
 // Carico i due prompt anagrafica e anamnesi
-const promptAnagrafica = fs.readFileSync(path.resolve("controllers/promptAnagrafica.txt"), "utf-8");
-const promptAnamnesi = fs.readFileSync(path.resolve("controllers/promptAnamnesi.txt"), "utf-8");
+const promptAnagrafica = fs.readFileSync(path.resolve(PROMPT_PATHS.ANAGRAFICA), "utf-8");
+const promptAnamnesi = fs.readFileSync(path.resolve(PROMPT_PATHS.ANAMNESI), "utf-8");
 let systemPrompt = promptAnagrafica;
 
 // Inizializzo lo storico delle frasi e il JSON di backup per il comando annulla 
 let storico = [];
 let JSONBackup;
+
+// Creazione messaggio per il modello
+function buildMessages(testo) {
+    return [
+        { role: "system", content: systemPrompt },
+        { 
+            role: "user", 
+            content: `
+                Storico della conversazione:
+                ${storico}
+
+                Trascrizione per compilazione form:
+                ${testo}`.trim()
+        }
+    ];
+}
+
+// Cambio prompt in base al contesto
+function updateSystemPrompt(context) {
+  if (context === CONTEXTS.ANAMNESI) {
+    systemPrompt = promptAnamnesi;
+  } else if (context === CONTEXTS.ANAGRAFICA) {
+    systemPrompt = promptAnagrafica;
+  }
+}
 
 // Invio della trascrizone al modello
 export async function analizzaTrascrizione(req, res) {
@@ -34,17 +70,7 @@ export async function analizzaTrascrizione(req, res) {
     }
 
     // Costruisco il messaggio da inviare al modello
-    const messages = [
-        { role: "system", content: systemPrompt },
-        // Aggiungo l'ultima frase come ultimo messaggio e lo storico
-        { role: "user", content: `
-            Storico della conversazione:
-            ${storico}
-
-            Trascrizione per compilazione form:
-            ${testo}` 
-        }
-    ];
+    const messages = buildMessages(testo);
     
     console.log("Testo da analizzare: ", testo);
     console.log("Storico: ", storico);
@@ -57,50 +83,42 @@ export async function analizzaTrascrizione(req, res) {
             temperature: 0
         });
        
-        const risposta = response.choices[0]?.message?.content?.trim(); // Estrae il contenuto testuale della risposta
-        let parsed = JSON.parse(risposta); // Parsed del JSON, per accesso ai campi        
-        systemPrompt = parsed.context === "anamnesi" ? promptAnamnesi : promptAnagrafica; // Cambio del prompt in base al campo action
-
-        if("action" in parsed){
-            if(parsed.action === "compila" &&  "phrase" in parsed){ // Case nel quale ci sono dei campi da aggiornare
-                JSONBackup = parsed; // Salvo il JSON per poterlo ripristinare in caso di ANNULLA
-                storico.push(parsed.phrase); // Aggiorno lo storico con l'ultima frase riassuntiva
-                
-                console.log("---------------------------------------------");
-                console.log("Risposta GPT:", risposta);
-                console.log("---------------------------------------------");
-                
-                res.json({ risultato: risposta }); // Ritorna al FE il risultato ottenuto dal modello
-            } else if(parsed.action === "annulla"){
-                // Caso annulla, recupero l'ultimo JSON
-                if (JSONBackup) {
-                    
-                    const annullaJSON = { ...JSONBackup, action: "annulla" };
-                    
-                    console.log("---------------------------------------------");
-                    console.log("Risposta GPT", risposta);
-                    console.log("JSON per il FE annulla:", annullaJSON);
-                    console.log("---------------------------------------------");
-                    
-                    storico.pop(); // Elimino l'ultimo elemento dello storico
-                    res.json({ risultato: JSON.stringify(annullaJSON) });
-                }
-            } else  {
-                console.log("---------------------------------------------");
-                console.log("Risposta GPT:", risposta);
-                console.log("---------------------------------------------");
-                res.json({ risultato: risposta }); // Ritorna al FE il risultato ottenuto dal modello
-            }
-        } else{
-            console.log("---------------------------------------------");
-            console.log("Risposta GPT:", risposta);
-            console.log("---------------------------------------------");
-            res.json({ risultato: risposta }); // Ritorna al FE il risultato ottenuto dal modello
+        // Estrae la risposta del modello
+        const risposta = response.choices[0]?.message?.content?.trim();
+        if (!risposta) {
+            throw new Error("Nessuna risposta dal modello GPT");
         }
-    } catch (err) {
+
+        // Parsed del JSON, per accesso ai campi
+        let parsed = JSON.parse(risposta);      
+
+        updateSystemPrompt(parsed.context);
+
+        console.log("---------------------------------------------");
+        console.log("Risposta GPT:", risposta);
+        console.log("---------------------------------------------");
+
+    // Case compila, in cui c'è qualche campo da aggiornare
+    if (parsed.action === ACTIONS.COMPILA && "phrase" in parsed) {
+        JSONBackup = parsed;
+        storico.push(parsed.phrase);
+        return res.json({ risultato: risposta });
+      }
+
+      // Case annulla, risprino al JSON precendente
+      if (parsed.action === ACTIONS.ANNULLA) {
+        if (JSONBackup) {
+          const annullaJSON = { ...JSONBackup, action: ACTIONS.ANNULLA }; // Recupero il JSON di backup
+          storico.pop();
+          return res.json({ risultato: JSON.stringify(annullaJSON) });
+        }
+      }
+
+    // Default: ritorno direttamente la risposta GPT
+    res.json({ risultato: risposta });
+    
+} catch (err) {
     console.error("Errore durante l'invio a GPT:", err);
     res.status(500).json({ error: "Errore durante l'elaborazione GPT", details: err.toString() });
   }
 }
-
-
