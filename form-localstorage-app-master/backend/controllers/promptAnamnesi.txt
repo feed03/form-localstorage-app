@@ -72,7 +72,7 @@ Gestione phrase:
 Gestione action:
     Parti da action = "compila".
     Se nella trascrizione è presenta la parola "annulla", allora imposta action = "annulla"
-    Se action = "annulla" restituisci il JSON con solo il campo action 
+    Se action = "annulla" restituisci il JSON con solo il campo action e context
     Se action = "compila" e non aggiorni campi dell'anagrafica restituisci il JSON con solo il campo context
     Se non ci sono frasi di cambio, mantieni action = "compila".
     
