@@ -36,7 +36,7 @@ export interface StatoGravidanza {
   sconosciuto: boolean;
   no: boolean;
   si: boolean;
-  settimane: number | null;
+  settimane: string;
 }
 
 export interface Farmaci {
@@ -139,7 +139,7 @@ export class Paziente {
       sconosciuto: false,
       no: false,
       si: false,
-      settimane: null
+      settimane: ""
     };
 
     this.farmaci = {

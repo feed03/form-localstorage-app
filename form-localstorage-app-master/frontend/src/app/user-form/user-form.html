@@ -46,7 +46,7 @@
 
         <mat-form-field class="pair small" appearance="fill">
           <mat-label>Genere</mat-label>
-          <mat-select [(ngModel)]="paziente.gender" name="gender" (selectionChange)="onGenderChange()">
+          <mat-select [(ngModel)]="paziente.gender" name="gender">
             <mat-option value="M">Maschile</mat-option>
             <mat-option value="F">Femminile</mat-option>
             <mat-option value="Altro">Altro</mat-option>
@@ -179,22 +179,22 @@
             <mat-radio-group name="gravidanza">
               <mat-radio-button value="sconosciuto" 
                                 [checked]="paziente.stato_gravidanza.sconosciuto" 
-                                (change)="paziente.stato_gravidanza = {sconosciuto: true, no: false, si: false, settimane: null}"> Sconosciuto
+                                (change)='paziente.stato_gravidanza = {sconosciuto: true, no: false, si: false, settimane: ""}'> Sconosciuto
               </mat-radio-button>
               <mat-radio-button value="no" 
                                 [checked]="paziente.stato_gravidanza.no" 
-                                (change)="paziente.stato_gravidanza = {sconosciuto: false, no: true, si: false, settimane: null}"> No
+                                (change)='paziente.stato_gravidanza = {sconosciuto: false, no: true, si: false, settimane: ""}'> No
               </mat-radio-button>
               <mat-radio-button value="si" 
                                 [checked]="paziente.stato_gravidanza.si" 
-                                (change)="paziente.stato_gravidanza = {sconosciuto: false, no: false, si: true, settimane: null}"> Sì
+                                (change)='paziente.stato_gravidanza = {sconosciuto: false, no: false, si: true, settimane: ""}'> Sì
             </mat-radio-button>
             </mat-radio-group>
 
             <div *ngIf="paziente.stato_gravidanza.si" class="nested-field">
               <mat-form-field appearance="fill" class="full-width">
                 <mat-label>Settimane</mat-label>
-                <input matInput type="number" [(ngModel)]="paziente.stato_gravidanza.settimane" name="settimane">
+                <input matInput [(ngModel)]="paziente.stato_gravidanza.settimane" name="settimane">
               </mat-form-field>
             </div>
           </div>

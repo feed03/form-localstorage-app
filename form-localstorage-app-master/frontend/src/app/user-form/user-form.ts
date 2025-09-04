@@ -18,7 +18,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
-import { Paziente, Malattie, Allergie, Infezioni, StatoGravidanza, Farmaci, Altro } from './paziente';
+import { Paziente } from './paziente';
+import { resetCampiAnagrafica, resetCampiAnamnesi, fillAnagrafica, fillAnamnesi } from './paziente-utils';
 
 
 @Component({
@@ -151,15 +152,18 @@ export class UserForm implements OnInit {
             if("action" in parsed){
               if(parsed.action === "compila"){
                 console.log("Elementi da aggiornare: ", parsed);
-
                 if(parsed.context === "anagrafica"){
-                  this.fillAnagrafica(parsed); // Aggiorno i campi
+                  this.paziente = fillAnagrafica(this.paziente, parsed);
                 } else if(parsed.context === "anamnesi"){
-                  this.fillAnamnesi(parsed); // Setto a true solo i campi booleani specificati
+                  this.paziente = fillAnamnesi(this.paziente, parsed);
                 }                
               } else {
                 console.log("Elementi da resettare: ", parsed)
-                this.resetCampo(parsed); //  Ripristino i campi
+                if(parsed.context === "anagrafica"){
+                  this.paziente = resetCampiAnagrafica(this.paziente, parsed);
+                } else if(parsed.context === "anamnesi"){
+                  this.paziente = resetCampiAnamnesi(this.paziente, parsed);
+                }
               }
             }
             
@@ -184,170 +188,6 @@ export class UserForm implements OnInit {
     link.click();
   }
 
-  // Metodo per l'effettivo reset dei Campi
-  resetCampo(reset: Partial<Paziente>) {
-    for (const key in reset) {
-      
-      const value = reset[key as keyof Paziente];
-      if (value == null) continue;
-      
-      const campo = key as keyof Paziente;
-      switch (campo) {
-        case "birthDate":
-          this.paziente.birthDate = undefined;
-          break;
-        case "gender":
-          this.paziente.gender = "";
-          break;
-        default:
-          (this.paziente[campo] as string) = ""; // Tutti gli altri campi sono string
-          console.log("Campo annullato");
-          break;
-      }
-    }
-  }
-
-  // Metodo per riempire l'anagrafica
- fillAnagrafica(aggiornamenti: Partial<Paziente>) {
-  console.log("Aggiornamenti ricevuti:", aggiornamenti);
-    for (const key in aggiornamenti) {
-      const value = aggiornamenti[key as keyof Paziente];
-      if (value == null) continue;
-        const campo = key as keyof Paziente;
-        
-          switch (campo) {
-          case "birthDate":
-            this.paziente.birthDate = aggiornamenti.birthDate;
-          break;
-          
-          case "gender":
-            if (aggiornamenti.gender !== undefined) { // Controllo sul valore
-              const g = aggiornamenti.gender;
-              if (g === "M" || g === "F" || g === "") {
-                this.paziente.gender = g;
-              }
-            }
-          break;
-          
-          default:
-            (this.paziente[campo] as string) = (aggiornamenti[campo] as string); // Tutti gli altri campi sono string/boolean
-            console.log("Campo aggiornato:", campo, "->", aggiornamenti[campo]);
-          break;
-        }
-    }
-  }
-
-// Metodo per settare a true solo i campi booleani specificati nell'input
-fillAnamnesi(aggiornamenti: Partial<Paziente>) {
-  console.log("Campi da aggiornare:", aggiornamenti);
-  
-  // Gestione malattie
-  if (aggiornamenti.malattie) {
-    for (const key in aggiornamenti.malattie) {
-      const campo = key as keyof Malattie;
-      const value = aggiornamenti.malattie[campo];
-      if (typeof value === 'boolean' && value === true) {
-        (this.paziente.malattie as any)[campo] = true;
-        console.log(`Campo malattie.${campo} settato a true`);
-      } else if (typeof value === 'string' && value.trim() !== '') {
-        (this.paziente.malattie as any)[campo] = value;
-        console.log(`Campo malattie.${campo} settato a "${value}"`);
-      }
-    }
-  }
-  
-  // Gestione allergie
-  if (aggiornamenti.allergie) {
-    for (const key in aggiornamenti.allergie) {
-      const campo = key as keyof Allergie;
-      const value = aggiornamenti.allergie[campo];
-      if (typeof value === 'boolean' && value === true) {
-        (this.paziente.allergie as any)[campo] = true;
-        console.log(`Campo allergie.${campo} settato a true`);
-      } else if (typeof value === 'string' && value.trim() !== '') {
-        (this.paziente.allergie as any)[campo] = value;
-        console.log(`Campo allergie.${campo} settato a "${value}"`);
-      }
-    }
-  }
-  
-  // Gestione infezioni
-  if (aggiornamenti.infezioni) {
-    for (const key in aggiornamenti.infezioni) {
-      const campo = key as keyof Infezioni;
-      const value = aggiornamenti.infezioni[campo];
-      if (typeof value === 'boolean' && value === true) {
-        (this.paziente.infezioni as any)[campo] = true;
-        console.log(`Campo infezioni.${campo} settato a true`);
-      } else if (typeof value === 'string' && value.trim() !== '') {
-        (this.paziente.infezioni as any)[campo] = value;
-        console.log(`Campo infezioni.${campo} settato a "${value}"`);
-      }
-    }
-  }
-  
-  // Gestione stato gravidanza
-  if (aggiornamenti.stato_gravidanza) {
-    for (const key in aggiornamenti.stato_gravidanza) {
-      const campo = key as keyof StatoGravidanza;
-      const value = aggiornamenti.stato_gravidanza[campo];
-      
-      if (typeof value === 'boolean' && value === true) {
-        // Per stato_gravidanza, se settiamo uno a true, gli altri devono essere false
-        if (campo === 'sconosciuto' || campo === 'no' || campo === 'si') {
-          this.paziente.stato_gravidanza.sconosciuto = false;
-          this.paziente.stato_gravidanza.no = false;
-          this.paziente.stato_gravidanza.si = false;
-          (this.paziente.stato_gravidanza as any)[campo] = true;
-          console.log(`Campo stato_gravidanza.${campo} settato a true (altri settati a false)`);
-        }
-      }
-      // Gestione settimane (campo numerico)
-      if (campo === 'settimane' && typeof value === 'number') {
-        this.paziente.stato_gravidanza.settimane = value;
-        console.log(`Campo stato_gravidanza.settimane settato a ${value}`);
-      }
-    }
-  }
-  
-  // Gestione farmaci
-  if (aggiornamenti.farmaci) {
-    for (const key in aggiornamenti.farmaci) {
-      const campo = key as keyof Farmaci;
-      const value = aggiornamenti.farmaci[campo];
-      if (typeof value === 'boolean' && value === true) {
-        (this.paziente.farmaci as any)[campo] = true;
-        console.log(`Campo farmaci.${campo} settato a true`);
-      } else if (typeof value === 'string' && value.trim() !== '') {
-        (this.paziente.farmaci as any)[campo] = value;
-        console.log(`Campo farmaci.${campo} settato a "${value}"`);
-      }
-    }
-  }
-  
-  // Gestione altro (abitudini)
-  if (aggiornamenti.altro) {
-    for (const key in aggiornamenti.altro) {
-      const campo = key as keyof Altro;
-      const value = aggiornamenti.altro[campo];
-      if (typeof value === 'boolean' && value === true) {
-        // Per fumatore, gestiamo la logica mutualmente esclusiva
-        if (campo === 'fumatore') {
-          this.paziente.altro.fumatore = true;
-          console.log(`Campo altro.fumatore settato a true`);
-        } else if (campo === 'piu_10_sigarette' || campo === 'meno_10_sigarette') {
-          // Se specifichiamo il numero di sigarette, il paziente è automaticamente fumatore
-          this.paziente.altro.fumatore = true;
-          this.paziente.altro.piu_10_sigarette = false;
-          this.paziente.altro.meno_10_sigarette = false;
-          (this.paziente.altro as any)[campo] = true;
-          console.log(`Campo altro.${campo} settato a true (fumatore automaticamente true)`);
-        }
-      }
-    }
-  }
-}
-
   // Metodi per lo scroll della textArea
   ngAfterViewChecked() {
     this.scrollToBottom();
@@ -356,12 +196,5 @@ fillAnamnesi(aggiornamenti: Partial<Paziente>) {
   private scrollToBottom(): void {
     const element = this.trascrizioneBox.nativeElement;
     element.scrollTop = element.scrollHeight;
-  }
-
-  // Aggiorno lo stato di gravidanza a No se il genere e maschile
-  onGenderChange() {
-    if (this.paziente.gender === 'M') {
-      this.paziente.stato_gravidanza = { sconosciuto: false, no: true, si: false, settimane: null };
-    } 
   }
 }
