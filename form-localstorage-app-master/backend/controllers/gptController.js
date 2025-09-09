@@ -98,7 +98,7 @@ export async function analizzaTrascrizione(req, res) {
         console.log("Risposta GPT:", risposta);
         console.log("---------------------------------------------");
 
-    // Case compila, in cui c'è qualche campo da aggiornare
+    // Action compila, salvo il JSON e aggiorno lo storico
     if (parsed.action === ACTIONS.COMPILA && "phrase" in parsed) {
         JSONBackup = parsed;
         storico.push(parsed.phrase);
