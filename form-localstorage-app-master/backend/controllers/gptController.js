@@ -5,13 +5,13 @@ import path from "path";
 
 dotenv.config();
 
-const apiKey = process.env.AZURE_OPENAI_API_KEY; // Recupera la chiave API da .env
-const endpoint = process.env.AZURE_OPENAI_API_END_POINT; // Recupera l'endPoint da .env
+const AZURE_OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY; // Recupera la chiave API da .env
+const AZURE_OPENAI_API_END_POINT = process.env.AZURE_OPENAI_API_END_POINT; // Recupera l'endPoint da .env
 
 // Configurazione del servizio
 const client = new AzureOpenAI({
-    apiKey, // Key della risorsa OPENAPI
-    endpoint, // Endpoint della risorsa Azure
+    apiKey: AZURE_OPENAI_API_KEY,         
+    endpoint: AZURE_OPENAI_API_END_POINT,
     deployment: "gpt-4.1-mini", // Nome del deployment configurato su Azure
     apiVersion: "2024-04-01-preview", // Versione dell'API compatibile con il deployment
 });

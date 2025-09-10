@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 dotenv.config();
 
 const AZURE_SPEECH_KEY = process.env.AZURE_SPEECH_KEY;
-const AZURE_URL = process.env.AZURE_SPEECH_URL;
+const AZURE_SPEECH_END_POINT = process.env.AZURE_SPEECH_END_POINT;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,7 +55,7 @@ export async function uploadAudio(req, res){
     // Invia il file convertito ad Azure Speech
     const audioData = fs.readFileSync(finalPath);
 
-    const response = await axios.post(AZURE_URL, audioData, {  // Invio richiesta POST a AzureSpeech
+    const response = await axios.post(AZURE_SPEECH_END_POINT, audioData, {  // Invio richiesta POST a AzureSpeech
       headers: {
         'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY, 
         'Content-Type': 'audio/wav',
