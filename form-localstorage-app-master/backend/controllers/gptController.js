@@ -4,7 +4,6 @@ import fs from "fs";
 import path from "path";
 
 dotenv.config();
-
 const AZURE_OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY; // Recupera la chiave API da .env
 const AZURE_OPENAI_API_END_POINT = process.env.AZURE_OPENAI_API_END_POINT; // Recupera l'endPoint da .env
 
@@ -61,12 +60,10 @@ function updateSystemPrompt(context) {
   }
 }
 
-// Invio della trascrizone al modello
-export async function analizzaTrascrizione(req, res) {
-    const testo = req.body.testo; // Ultimo pezzo di trascrizione ricevuto dal FE
-    
+// Gestisce l'eleborazione del testo ricevuto
+export async function elaboraTrascrizione(testo) {
     if(!testo){
-        return res.status(400).json({ error: "Testo mancante" }); 
+        throw new Error("Testo mancante"); 
     }
 
     // Costruisco il messaggio da inviare al modello
@@ -91,34 +88,33 @@ export async function analizzaTrascrizione(req, res) {
 
         // Parsed del JSON, per accesso ai campi
         let parsed = JSON.parse(risposta);      
-
         updateSystemPrompt(parsed.context);
 
         console.log("---------------------------------------------");
         console.log("Risposta GPT:", risposta);
         console.log("---------------------------------------------");
 
-    // Action compila, salvo il JSON e aggiorno lo storico
-    if (parsed.action === ACTIONS.COMPILA && "phrase" in parsed) {
-        JSONBackup = parsed;
-        storico.push(parsed.phrase);
-        return res.json({ risultato: risposta });
-      }
-
-      // Case annulla, risprino al JSON precendente
-      if (parsed.action === ACTIONS.ANNULLA) {
-        if (JSONBackup) {
-          const annullaJSON = { ...JSONBackup, action: ACTIONS.ANNULLA }; // Recupero il JSON di backup
-          storico.pop();
-          return res.json({ risultato: JSON.stringify(annullaJSON) });
+        // Case compila, in cui c'è qualche campo da aggiornare
+        if (parsed.action === ACTIONS.COMPILA && "phrase" in parsed) {
+            JSONBackup = parsed;
+            storico.push(parsed.phrase);
+            return { risultato: risposta };
         }
-      }
 
-    // Default: ritorno direttamente la risposta GPT
-    res.json({ risultato: risposta });
-    
-} catch (err) {
-    console.error("Errore durante l'invio a GPT:", err);
-    res.status(500).json({ error: "Errore durante l'elaborazione GPT", details: err.toString() });
-  }
+        // Case annulla, risprino al JSON precendente
+        if (parsed.action === ACTIONS.ANNULLA) {
+            if (JSONBackup) {
+                const annullaJSON = { ...JSONBackup, action: ACTIONS.ANNULLA }; // Recupero il JSON di backup
+                storico.pop();
+                return { risultato: JSON.stringify(annullaJSON) };
+            }
+        }
+
+        // Default: ritorno direttamente la risposta GPT
+        return { risultato: risposta };
+        
+    } catch (err) {
+        console.error("Errore durante l'invio a GPT:", err);
+        throw new Error("Errore durante l'elaborazione GPT: " + err.toString());
+    }
 }

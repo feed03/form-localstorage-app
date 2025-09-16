@@ -77,11 +77,13 @@ export class UserForm implements OnInit {
         next: (res) => {
           // Salva il testo trascritto se disponibile
           if (res && res.transcriptionJob && res.transcriptionJob.DisplayText) {
-            const testo_ricevuto = res.transcriptionJob.DisplayText; // Ultima parte di trascrizione ricevuto
-
+            const testo_ricevuto = res.transcriptionJob.DisplayText;
             this.trascrizione += ' \n ' + testo_ricevuto; // Aggiorno trascrizione completa per visualizzazione a video
-
-            this.inviaTrascrizione(testo_ricevuto); // Invio trascrizone al BE
+          }
+          
+          // Gestione eleborazione AI
+          if (res && res.elaborazioneAI && res.elaborazioneAI.risultato){
+            this.elaboraRispostaAI(res.elaborazioneAI.risultato);
           }
         },
         error: (err) => {
@@ -89,6 +91,42 @@ export class UserForm implements OnInit {
         }
       });
     });
+  }
+  
+  // Elabora la risposta AI (sostituisce inviaTrascrizione)
+  private elaboraRispostaAI(risultatoAI: string) {
+    try {
+      const parsed = JSON.parse(risultatoAI); 
+      
+      console.log("Response AI: ", parsed);
+
+      // Cambio contesto per spostare il focus nell'interfaccia
+      if(parsed.context == "anagrafica" || parsed.context == "anamnesi"){
+        this.context = parsed.context;
+      }
+      
+      // Rilevo se devo aggiornare o resettare i campi
+      if("action" in parsed){
+        if(parsed.action === "compila"){
+          console.log("Elementi da aggiornare: ", parsed);
+          if(parsed.context === "anagrafica"){
+            this.paziente = fillAnagrafica(this.paziente, parsed);
+          } else if(parsed.context === "anamnesi"){
+            this.paziente = fillAnamnesi(this.paziente, parsed);
+          }                
+        } else {
+          console.log("Elementi da resettare: ", parsed)
+          if(parsed.context === "anagrafica"){
+            this.paziente = resetCampiAnagrafica(this.paziente, parsed);
+          } else if(parsed.context === "anamnesi"){
+            this.paziente = resetCampiAnamnesi(this.paziente, parsed);
+          }
+        }
+      }
+      
+    } catch (err) {
+      alert("Formato risposta non valido" + err);
+    }
   }
 
   // Salva localmente i dati (cache del browser)
@@ -111,7 +149,6 @@ export class UserForm implements OnInit {
     localStorage.removeItem('paziente');
     alert('Dati resettati!');
   }
-  
   // Inzia la registrazione
   async startRecording() {
     await this.recorder.startRec();
@@ -127,53 +164,6 @@ export class UserForm implements OnInit {
 
       this.audioUrl = URL.createObjectURL(finalBlob);
     }, 300); // ritardo minimo per aspettare l’ultimo chunk
-  }
-
-  // Metodo che invia la trascriizone la BackEnd e popola il form
-  inviaTrascrizione(testo: string) {
-    if (!testo.trim()) {
-      alert("La trascrizione è vuota.");
-      return;
-    }
-    this.http.post<any>('http://localhost:3000/analizza', { testo }).subscribe({ // Chiamata per inviare la trascrizione al BE
-      next: (res) => {
-        if (res?.risultato) {
-          try {
-            const parsed = JSON.parse(res.risultato);
-
-            // Cambio contesto per spostare il focus nell'interfaccia
-            if(parsed.context == "anagrafica" || parsed.context == "anamnesi"){
-              this.context = parsed.context;
-            }
-            
-            // Rilevo se devo aggiornare o resettare i campi
-            if("action" in parsed){
-              if(parsed.action === "compila"){
-                console.log("Elementi da aggiornare: ", parsed);
-                if(parsed.context === "anagrafica"){
-                  this.paziente = fillAnagrafica(this.paziente, parsed);
-                } else if(parsed.context === "anamnesi"){
-                  this.paziente = fillAnamnesi(this.paziente, parsed);
-                }                
-              } else {
-                console.log("Elementi da resettare: ", parsed)
-                if(parsed.context === "anagrafica"){
-                  this.paziente = resetCampiAnagrafica(this.paziente, parsed);
-                } else if(parsed.context === "anamnesi"){
-                  this.paziente = resetCampiAnamnesi(this.paziente, parsed);
-                }
-              }
-            }
-            
-          } catch (err) {
-            alert("Formato risposta non valido" + err);
-          }
-        } else {
-          alert('Nessun risultato dal modello');
-        }
-      },
-      error: (err) => console.error("Errore durante invio al modello:", err)
-    });
   }
 
   // Metodo per scaricare la traccia audio completa

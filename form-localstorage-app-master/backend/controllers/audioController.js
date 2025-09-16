@@ -5,6 +5,7 @@ import { Readable } from 'stream';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
+import { elaboraTrascrizione } from './gptController.js';
 
 dotenv.config();
 
@@ -52,7 +53,6 @@ export async function uploadAudio(req, res){
     // Conversione WebM → WAV
     await convertToAzureWav(req.file.buffer, finalPath);
 
-    // Invia il file convertito ad Azure Speech
     const audioData = fs.readFileSync(finalPath);
 
     const response = await axios.post(AZURE_SPEECH_END_POINT, audioData, {  // Invio richiesta POST a AzureSpeech
@@ -65,13 +65,36 @@ export async function uploadAudio(req, res){
       maxBodyLength: Infinity
     });
 
+    // Estrazione della trascrizione dalla risposta
+    const trascrizione = response.data.DisplayText;
+    if (!trascrizione) {
+      return res.status(200).json({
+        message: 'Audio elaborato ma nessuna trascrizione disponibile.',
+        trascrizione: '',
+        elaborazioneAI: null
+      });
+    }
+
+    // Chiamata interna per elaborazione dati 
+    let elaborazioneAI = null;
+    try {
+      // Chiamata alla funziona di eleborazione
+      elaborazioneAI = await elaboraTrascrizione(trascrizione);
+    } catch (aiError) {
+      console.error("Errore nell'elaborazione AI:", aiError);
+      // Continuiamo anche se l'AI fallisce, restituisce la trascrizione
+      elaborazioneAI = { error: "Errore nell'elaborazione AI: " + aiError.message };
+    }
+
+    // Restituisci sia trascrizione che risultato AI
     res.status(200).json({
       message: 'Audio salvato e inviato per trascrizione.',
-      transcriptionJob: response.data
+      transcriptionJob: {
+        DisplayText: trascrizione  // Manteniamo la struttura originale per compatibilità
+      },
+      elaborazioneAI: elaborazioneAI  // Risultato dell'AI
     });
 
-    console.log('Transcription result:', response.data);
-    
   }catch(error){
     res.status(500).json({ error: "Errore nella trascrizone con Azure", details: error.toString() });
   } finally {
