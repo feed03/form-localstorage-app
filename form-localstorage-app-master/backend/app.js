@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import audioRoutes from './routes/audioRoutes.js';
 
+
 const app = express(); // Crea un'applicazione Express
 app.use(cors()); // Abilita CORS per permettere richieste dal frontend (es. localhost:4200)
 app.use(express.json()); // Middleware per leggere JSON dal body delle richieste
