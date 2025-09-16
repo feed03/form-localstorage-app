@@ -69,6 +69,8 @@ export async function uploadAudio(req, res){
       message: 'Audio salvato e inviato per trascrizione.',
       transcriptionJob: response.data
     });
+
+    console.log('Transcription result:', response.data);
     
   }catch(error){
     res.status(500).json({ error: "Errore nella trascrizone con Azure", details: error.toString() });
