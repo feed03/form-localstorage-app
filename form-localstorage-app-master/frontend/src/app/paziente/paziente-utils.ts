@@ -1,6 +1,6 @@
 import { Paziente, StatoGravidanza } from './paziente';
 
-// Reset specifico dei campi
+// Reset specifico dei campi Anagrafica
 export function resetCampiAnagrafica(paziente: Paziente, reset: Partial<Paziente>): Paziente {
   for (const key in reset) {
     const campo = key as keyof Paziente;
@@ -19,6 +19,7 @@ export function resetCampiAnagrafica(paziente: Paziente, reset: Partial<Paziente
   return paziente;
 }
 
+// Reset specifico dei campi Anamnesi
 export function resetCampiAnamnesi(paziente: Paziente, reset: Partial<Paziente>): Paziente {
         // Sezioni possibili da aggiornare
     const sections: (keyof Paziente)[] = ["malattie", "allergie", "infezioni", "stato_gravidanza", "farmaci", "altro"];

@@ -18,8 +18,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
-import { Paziente } from './paziente';
-import { resetCampiAnagrafica, resetCampiAnamnesi, fillAnagrafica, fillAnamnesi } from './paziente-utils';
+import { Paziente } from '../paziente/paziente';
+import { resetCampiAnagrafica, resetCampiAnamnesi, fillAnagrafica, fillAnamnesi } from '../paziente/paziente-utils';
 
 
 @Component({
@@ -77,11 +77,11 @@ export class UserForm implements OnInit {
         next: (res) => {
           // Salva il testo trascritto se disponibile
           if (res && res.transcriptionJob && res.transcriptionJob.DisplayText) {
-            const testo_Ricevuto = res.transcriptionJob.DisplayText; // Ultima parte di trascrizione ricevuto
+            const testo_ricevuto = res.transcriptionJob.DisplayText; // Ultima parte di trascrizione ricevuto
 
-            this.trascrizione += ' \n ' + testo_Ricevuto; // Aggiorno trascrizione completa per visualizzazione a video
+            this.trascrizione += ' \n ' + testo_ricevuto; // Aggiorno trascrizione completa per visualizzazione a video
 
-            this.inviaTrascrizione(testo_Ricevuto); // Invio trascrizone al BE
+            this.inviaTrascrizione(testo_ricevuto); // Invio trascrizone al BE
           }
         },
         error: (err) => {
@@ -142,10 +142,8 @@ export class UserForm implements OnInit {
             const parsed = JSON.parse(res.risultato);
 
             // Cambio contesto per spostare il focus nell'interfaccia
-            if(parsed.context == "anagrafica"){
-              this.context = "anagrafica";
-            } else if(parsed.context == "anamnesi"){
-              this.context = "anamnesi"; 
+            if(parsed.context == "anagrafica" || parsed.context == "anamnesi"){
+              this.context = parsed.context;
             }
             
             // Rilevo se devo aggiornare o resettare i campi
