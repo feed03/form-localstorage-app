@@ -46,14 +46,13 @@ export class UserForm implements OnInit {
 
   recorder!: AudioRecorder; // Oggetto per la gestione dell'audio
   audioUrl: string | null = null; // URL generato per ascoltare l'audio generato
-  isRecording: boolean = false; // tiene traccia se stiamo registrando
+  isRecording: boolean = false; // Tiene traccia se la registrazione è attiva
 
   trascrizione: string = " "; // Trascrizione completo per visualizzazione nella textArea
   
-   @ViewChild('trascrizioneBox') private trascrizioneBox!: ElementRef;
+  @ViewChild('trascrizioneBox') private trascrizioneBox!: ElementRef;
 
   context: string = "anagrafica";
-
   check_annulla: boolean = false;
   first: boolean = true;
 
@@ -61,24 +60,26 @@ export class UserForm implements OnInit {
     this.carica(); // Carica eventuali dati in cache
   }
 
-  // Metodo per l'invio del blob audio
+  // CallBack per l'invio dell'audio
   ngOnInit() {
-    this.recorder = new AudioRecorder((blob) => { // Inizializza il recorder audio quando il componente viene caricato
+    // Inizializzazione del recordo audio
+    this.recorder = new AudioRecorder((blob) => {
       
       const formData = new FormData();
       formData.append('audio', blob, 'audio.webm');
-    
-      // Controllo se il formData ha effettivamente dei file
+      
+      // Controllo sulla size del blob
       if (blob.size <= 12800) {
-        return; // Non fare la chiamata se non c'è audio
+        return;
       }
+
       //Invio tramite POST al backend
       this.http.post<any>('http://localhost:3000/upload-audio', formData).subscribe({
         next: (res) => {
-          // Salva il testo trascritto se disponibile
+          // Aggiorno trascrizione per visualizzazione in UI
           if (res && res.transcriptionJob && res.transcriptionJob.DisplayText) {
             const testo_ricevuto = res.transcriptionJob.DisplayText;
-            this.trascrizione += ' \n ' + testo_ricevuto; // Aggiorno trascrizione completa per visualizzazione a video
+            this.trascrizione += ' \n ' + testo_ricevuto;
           }
           
           // Gestione eleborazione AI
@@ -93,12 +94,10 @@ export class UserForm implements OnInit {
     });
   }
   
-  // Elabora la risposta AI (sostituisce inviaTrascrizione)
+  // Gestione del JSON ricevuto dal BE
   private elaboraRispostaAI(risultatoAI: string) {
     try {
       const parsed = JSON.parse(risultatoAI); 
-      
-      console.log("Response AI: ", parsed);
 
       // Cambio contesto per spostare il focus nell'interfaccia
       if(parsed.context == "anagrafica" || parsed.context == "anamnesi"){
@@ -109,21 +108,24 @@ export class UserForm implements OnInit {
       if("action" in parsed){
         if(parsed.action === "compila"){
           console.log("Elementi da aggiornare: ", parsed);
+          
           if(parsed.context === "anagrafica"){
             this.paziente = fillAnagrafica(this.paziente, parsed);
           } else if(parsed.context === "anamnesi"){
             this.paziente = fillAnamnesi(this.paziente, parsed);
-          }                
+          }
+
         } else {
           console.log("Elementi da resettare: ", parsed)
+
           if(parsed.context === "anagrafica"){
             this.paziente = resetCampiAnagrafica(this.paziente, parsed);
           } else if(parsed.context === "anamnesi"){
             this.paziente = resetCampiAnamnesi(this.paziente, parsed);
           }
+
         }
       }
-      
     } catch (err) {
       alert("Formato risposta non valido" + err);
     }
@@ -135,7 +137,7 @@ export class UserForm implements OnInit {
     alert('Dati salvati correttamente!');
   }
   
-  // Carica dalla cache i dati
+  // Carica dalla cache i dati, se presenti
   carica() {
     const saved = localStorage.getItem('paziente');
     if (saved) {
@@ -149,6 +151,7 @@ export class UserForm implements OnInit {
     localStorage.removeItem('paziente');
     alert('Dati resettati!');
   }
+  
   // Inzia la registrazione
   async startRecording() {
     await this.recorder.startRec();

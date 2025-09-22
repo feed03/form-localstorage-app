@@ -139,7 +139,7 @@ export class Paziente {
       sconosciuto: false,
       no: false,
       si: false,
-      settimane: ""
+      settimane: ''
     };
 
     this.farmaci = {

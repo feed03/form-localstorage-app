@@ -3,35 +3,41 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 
+// Estrazioni chiavi dal file .env
 dotenv.config();
-const AZURE_OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY; // Recupera la chiave API da .env
-const AZURE_OPENAI_API_END_POINT = process.env.AZURE_OPENAI_API_END_POINT; // Recupera l'endPoint da .env
+const AZURE_OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY;
+const AZURE_OPENAI_API_END_POINT = process.env.AZURE_OPENAI_API_END_POINT;
 
 // Configurazione del servizio
 const client = new AzureOpenAI({
     apiKey: AZURE_OPENAI_API_KEY,         
     endpoint: AZURE_OPENAI_API_END_POINT,
-    deployment: "gpt-4.1-mini", // Nome del deployment configurato su Azure
-    apiVersion: "2024-04-01-preview", // Versione dell'API compatibile con il deployment
+    deployment: "gpt-4.1-mini",
+    apiVersion: "2024-04-01-preview",
 });
 
-// Constants
+// Definizione costanti
 const PROMPT_PATHS = {
     ANAGRAFICA: "prompt/promptAnagrafica.txt",
     ANAMNESI: "prompt/promptAnamnesi.txt"
 };
 
-// Azioni e contesti
-const ACTIONS = { COMPILA: "compila", ANNULLA: "annulla" };
-const CONTEXTS = { ANAGRAFICA: "anagrafica", ANAMNESI: "anamnesi" };
+const ACTIONS = { 
+    COMPILA: "compila", 
+    ANNULLA: "annulla" 
+};
 
+const CONTEXTS = { 
+    ANAGRAFICA: "anagrafica", 
+    ANAMNESI: "anamnesi" 
+};
 
 // Carico i due prompt anagrafica e anamnesi
 const promptAnagrafica = fs.readFileSync(path.resolve(PROMPT_PATHS.ANAGRAFICA), "utf-8");
 const promptAnamnesi = fs.readFileSync(path.resolve(PROMPT_PATHS.ANAMNESI), "utf-8");
 let systemPrompt = promptAnagrafica;
 
-// Inizializzo lo storico delle frasi e il JSON di backup per il comando annulla 
+// Inizializzazione variabili per la gestione della rollBack
 let storico = [];
 let JSONBackup;
 
@@ -51,7 +57,7 @@ function buildMessages(testo) {
     ];
 }
 
-// Cambio prompt in base al contesto
+// Gestione cambio contesto
 function updateSystemPrompt(context) {
   if (context === CONTEXTS.ANAMNESI) {
     systemPrompt = promptAnamnesi;
@@ -69,6 +75,7 @@ export async function elaboraTrascrizione(testo) {
     // Costruisco il messaggio da inviare al modello
     const messages = buildMessages(testo);
     
+    // Log per debug
     console.log("Testo da analizzare: ", testo);
     console.log("Storico: ", storico);
 
@@ -112,7 +119,6 @@ export async function elaboraTrascrizione(testo) {
 
         // Default: ritorno direttamente la risposta GPT
         return { risultato: risposta };
-        
     } catch (err) {
         console.error("Errore durante l'invio a GPT:", err);
         throw new Error("Errore durante l'elaborazione GPT: " + err.toString());

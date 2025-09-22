@@ -18,6 +18,7 @@
     </button>
   </span>
 </mat-toolbar>
+
 <!-- Parte superiore: form + anamnesi -->
 <div class="form-container">
   <div class="transcription-box">
@@ -28,98 +29,99 @@
   <div class="form-wrapper" [ngClass]="{'highlight-border': context === 'anagrafica'}">
     <div class="form-column">
       <form (ngSubmit)="salva()">
-      <h2>Anagrafica</h2>
+        <h2>Anagrafica</h2>
 
-      <!-- Nome, Cognome, Genere -->
-      <div class="inline-group">
-        <mat-form-field class="pair" appearance="fill">
-          <mat-label>Nome</mat-label>
-          <input matInput [(ngModel)]="paziente.name" name="name">
-          <mat-icon matSuffix>person_outline</mat-icon>
-        </mat-form-field>
+        <!-- Nome, Cognome, Genere -->
+        <div class="inline-group">
+          <mat-form-field class="pair" appearance="fill">
+            <mat-label>Nome</mat-label>
+            <input matInput [(ngModel)]="paziente.name" name="name">
+            <mat-icon matSuffix>person_outline</mat-icon>
+          </mat-form-field>
 
-        <mat-form-field class="pair" appearance="fill">
-          <mat-label>Cognome</mat-label>
-          <input matInput [(ngModel)]="paziente.surname" name="surname">
-          <mat-icon matSuffix>person_outline</mat-icon>
-        </mat-form-field>
+          <mat-form-field class="pair" appearance="fill">
+            <mat-label>Cognome</mat-label>
+            <input matInput [(ngModel)]="paziente.surname" name="surname">
+            <mat-icon matSuffix>person_outline</mat-icon>
+          </mat-form-field>
 
-        <mat-form-field class="pair small" appearance="fill">
-          <mat-label>Genere</mat-label>
-          <mat-select [(ngModel)]="paziente.gender" name="gender">
-            <mat-option value="M">Maschile</mat-option>
-            <mat-option value="F">Femminile</mat-option>
-            <mat-option value="Altro">Altro</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <!-- Data e città di nascita -->
-      <div class="inline-group double">
-        <mat-form-field class="pair" appearance="fill">
-          <mat-label>Data di nascita</mat-label>
-          <input matInput [matDatepicker]="picker" [(ngModel)]="paziente.birthDate" name="birthDate"/>
-          <mat-hint>MM/DD/YYYY</mat-hint>
-          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
-        </mat-form-field>
-
-        <mat-form-field class="pair" appearance="fill">
-          <mat-label>Città di nascita</mat-label>
-          <input matInput [(ngModel)]="paziente.cityOfBirth" name="cityOfBirth">
-          <mat-icon matSuffix>location_city</mat-icon>
-        </mat-form-field>
-      </div>
-
-      <!-- Indirizzo e Civico -->
-      <div class="inline-group">
-        <mat-form-field class="pair" appearance="fill">
-          <mat-label>Indirizzo</mat-label>
-          <input matInput [(ngModel)]="paziente.address" name="address">
-          <mat-icon matSuffix>home</mat-icon>
-        </mat-form-field>
-
-        <mat-form-field class="pair" appearance="fill">
-          <mat-label>Civico</mat-label>
-          <input matInput [(ngModel)]="paziente.houseNumber" name="houseNumber">
-          <mat-icon matSuffix>pin</mat-icon>
-        </mat-form-field>
-      </div>
-
-      <!-- Città e CAP -->
-      <div class="inline-group">
-        <mat-form-field class="pair" appearance="fill">
-          <mat-label>Città</mat-label>
-          <input matInput [(ngModel)]="paziente.city" name="city">
-          <mat-icon matSuffix>location_city</mat-icon>
-        </mat-form-field>
-
-        <mat-form-field class="pair" appearance="fill">
-          <mat-label>CAP</mat-label>
-          <input matInput [(ngModel)]="paziente.zipCode" name="zipCode">
-          <mat-icon matSuffix>markunread_mailbox</mat-icon>
-        </mat-form-field>
-      </div>
-
-      <!-- Email e Telefono -->
-      <div class="inline-group">
-        <mat-form-field class="pair" appearance="fill">
-          <mat-label>Email</mat-label>
-          <input matInput [(ngModel)]="paziente.email" name="email" placeholder="name@example.com">
-          <mat-icon matSuffix>email</mat-icon>
-        </mat-form-field>
-
-        <mat-form-field class="pair" appearance="fill">
-          <mat-label>Cellulare</mat-label>
-          <input matInput [(ngModel)]="paziente.phone" name="phone">
-          <mat-icon matSuffix>phone</mat-icon>
-        </mat-form-field>
+          <mat-form-field class="pair small" appearance="fill">
+            <mat-label>Genere</mat-label>
+            <mat-select [(ngModel)]="paziente.gender" name="gender">
+              <mat-option value="M">Maschile</mat-option>
+              <mat-option value="F">Femminile</mat-option>
+              <mat-option value="Altro">Altro</mat-option>
+            </mat-select>
+          </mat-form-field>
         </div>
-        <!-- Bottoni di invio e reset -->
+
+        <!-- Data e città di nascita -->
+        <div class="inline-group double">
+          <mat-form-field class="pair" appearance="fill">
+            <mat-label>Data di nascita</mat-label>
+            <input matInput [matDatepicker]="picker" [(ngModel)]="paziente.birthDate" name="birthDate"/>
+            <mat-hint>MM/DD/YYYY</mat-hint>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field class="pair" appearance="fill">
+            <mat-label>Città di nascita</mat-label>
+            <input matInput [(ngModel)]="paziente.cityOfBirth" name="cityOfBirth">
+            <mat-icon matSuffix>location_city</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Indirizzo e Civico -->
+        <div class="inline-group">
+          <mat-form-field class="pair" appearance="fill">
+            <mat-label>Indirizzo</mat-label>
+            <input matInput [(ngModel)]="paziente.address" name="address">
+            <mat-icon matSuffix>home</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field class="pair" appearance="fill">
+            <mat-label>Civico</mat-label>
+            <input matInput [(ngModel)]="paziente.houseNumber" name="houseNumber">
+            <mat-icon matSuffix>pin</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Città e CAP -->
+        <div class="inline-group">
+          <mat-form-field class="pair" appearance="fill">
+            <mat-label>Città</mat-label>
+            <input matInput [(ngModel)]="paziente.city" name="city">
+            <mat-icon matSuffix>location_city</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field class="pair" appearance="fill">
+            <mat-label>CAP</mat-label>
+            <input matInput [(ngModel)]="paziente.zipCode" name="zipCode">
+            <mat-icon matSuffix>markunread_mailbox</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Email e Telefono -->
+        <div class="inline-group">
+          <mat-form-field class="pair" appearance="fill">
+            <mat-label>Email</mat-label>
+            <input matInput [(ngModel)]="paziente.email" name="email" placeholder="name@example.com">
+            <mat-icon matSuffix>email</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field class="pair" appearance="fill">
+            <mat-label>Cellulare</mat-label>
+            <input matInput [(ngModel)]="paziente.phone" name="phone">
+            <mat-icon matSuffix>phone</mat-icon>
+          </mat-form-field>
+        </div>
+
+          <!-- Bottoni di invio e reset -->
         <div class="bottonLine">
-        <button mat-raised-button type="submit">Salva</button>
-        <button mat-raised-button type="button" (click)="reset()">Reset</button>
-      </div>
+          <button mat-raised-button type="submit">Salva</button>
+          <button mat-raised-button type="button" (click)="reset()">Reset</button>
+        </div>
       </form>
     </div>
     </div>
@@ -130,6 +132,7 @@
       <div class="anamnesi-column"  [ngClass]="{'highlight-border': context === 'anamnesi'}">
         <h2>Anamnesi</h2>
         <div class="anamnesi-grid">
+          
           <!-- Colonna 1 -->
           <div class="anamnesi-subcolumn">
             <h3>Malattie</h3>
@@ -188,7 +191,7 @@
               <mat-radio-button value="si" 
                                 [checked]="paziente.stato_gravidanza.si" 
                                 (change)='paziente.stato_gravidanza = {sconosciuto: false, no: false, si: true, settimane: ""}'> Sì
-            </mat-radio-button>
+              </mat-radio-button>
             </mat-radio-group>
 
             <div *ngIf="paziente.stato_gravidanza.si" class="nested-field">
@@ -212,23 +215,20 @@
               <mat-label>Altri farmaci</mat-label>
               <input matInput [(ngModel)]="paziente.farmaci.altri_farmaci" name="altri_farmaci">
             </mat-form-field>
+
             <h3>Altro</h3>
-            <mat-checkbox [(ngModel)]="paziente.altro.fumatore" name="fumatore">
-              Fumatore
-            </mat-checkbox>
+            <mat-checkbox [(ngModel)]="paziente.altro.fumatore" name="fumatore"> Fumatore </mat-checkbox>
 
             <div *ngIf="paziente.altro.fumatore" class="nested-field">
               <mat-radio-group name="sigarette">
-                <mat-radio-button 
-                  value="piu10"
-                  [checked]="paziente.altro.piu_10_sigarette"
-                  (change)="paziente.altro.piu_10_sigarette = true; paziente.altro.meno_10_sigarette = false"> Più di 10 sigarette al giorno
+                <mat-radio-button value="piu10"
+                                  [checked]="paziente.altro.piu_10_sigarette"
+                                  (change)="paziente.altro.piu_10_sigarette = true; paziente.altro.meno_10_sigarette = false"> Più di 10 sigarette al giorno
                 </mat-radio-button>
                 
-                <mat-radio-button 
-                  value="meno10"
-                  [checked]="paziente.altro.meno_10_sigarette"
-                  (change)="paziente.altro.meno_10_sigarette = true; paziente.altro.piu_10_sigarette = false"> Meno di 10 sigarette al giorno
+                <mat-radio-button value="meno10"
+                                  [checked]="paziente.altro.meno_10_sigarette"
+                                  (change)="paziente.altro.meno_10_sigarette = true; paziente.altro.piu_10_sigarette = false"> Meno di 10 sigarette al giorno
                 </mat-radio-button>
               </mat-radio-group>
             </div>

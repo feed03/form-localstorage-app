@@ -7,15 +7,15 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { elaboraTrascrizione } from './gptController.js';
 
+// Estrazione chiavi dal file .env
 dotenv.config();
-
 const AZURE_SPEECH_KEY = process.env.AZURE_SPEECH_KEY;
 const AZURE_SPEECH_END_POINT = process.env.AZURE_SPEECH_END_POINT;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Funzione per convertire WebM in WAV PCM
+// Funzione per convertire WebM in WAV
 function convertToAzureWav(inputBuffer, outputPath) {
   return new Promise((resolve, reject) => {
     const stream = new Readable();
@@ -36,26 +36,27 @@ function convertToAzureWav(inputBuffer, outputPath) {
 
 // Gestione dell'upload dell'audio
 export async function uploadAudio(req, res){
-  const uploadPath = path.join(__dirname, '..', 'uploads'); // Percorso per la repository degli upload
-  const timestamp = Date.now(); // Timestamp per nome file univoco 
-  const fileName = `audio-${timestamp}.wav`; // Assegnazione nomefile
-  const finalPath = path.join(uploadPath, fileName); // Path dove dsalre l'audio
+  const uploadPath = path.join(__dirname, '..', 'uploads'); 
+  const timestamp = Date.now();  
+  const fileName = `audio-${timestamp}.wav`; 
+  const finalPath = path.join(uploadPath, fileName);
 
   try{
     if (!req.file) {
       return res.status(400).send('Nessun file audio ricevuto.');
     } 
 
+    // Controllo sull'esistenaza della folder
     if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, {recursive: true}); // Se la rep non esiste la crea
+      fs.mkdirSync(uploadPath, {recursive: true});
     }
 
     // Conversione WebM → WAV
     await convertToAzureWav(req.file.buffer, finalPath);
-
     const audioData = fs.readFileSync(finalPath);
 
-    const response = await axios.post(AZURE_SPEECH_END_POINT, audioData, {  // Invio richiesta POST a AzureSpeech
+    // Invio richiesta POST ad AzureSpeech
+    const response = await axios.post(AZURE_SPEECH_END_POINT, audioData, {
       headers: {
         'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY, 
         'Content-Type': 'audio/wav',
@@ -78,7 +79,6 @@ export async function uploadAudio(req, res){
     // Chiamata interna per elaborazione dati 
     let elaborazioneAI = null;
     try {
-      // Chiamata alla funziona di eleborazione
       elaborazioneAI = await elaboraTrascrizione(trascrizione);
     } catch (aiError) {
       console.error("Errore nell'elaborazione AI:", aiError);
@@ -90,15 +90,15 @@ export async function uploadAudio(req, res){
     res.status(200).json({
       message: 'Audio salvato e inviato per trascrizione.',
       transcriptionJob: {
-        DisplayText: trascrizione  // Manteniamo la struttura originale per compatibilità
+        DisplayText: trascrizione  // Trascrizione ricevuta da STT
       },
-      elaborazioneAI: elaborazioneAI  // Risultato dell'AI
+      elaborazioneAI: elaborazioneAI  // Risultato dell'elaborazione AI
     });
 
   }catch(error){
     res.status(500).json({ error: "Errore nella trascrizone con Azure", details: error.toString() });
   } finally {
-    // Cancellazione del file WAV dopo l'invio anche in caso di errore
+    // Cancellazione file temporanei
     if (fs.existsSync(finalPath)) fs.unlinkSync(finalPath);
   }
 };
