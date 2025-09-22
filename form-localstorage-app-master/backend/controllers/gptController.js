@@ -17,8 +17,8 @@ const client = new AzureOpenAI({
 
 // Constants
 const PROMPT_PATHS = {
-    ANAGRAFICA: "controllers/promptAnagrafica.txt",
-    ANAMNESI: "controllers/promptAnamnesi.txt"
+    ANAGRAFICA: "prompt/promptAnagrafica.txt",
+    ANAMNESI: "prompt/promptAnamnesi.txt"
 };
 
 // Azioni e contesti
