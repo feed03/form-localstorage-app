@@ -126,7 +126,7 @@ Esempio di oggeto JSON corretto
         "marcumar": false,
         "ass": false,
         "anticoagulanti": false,
-        "bisfosfonati": false,
+        "bifosfonati": false,
         "anticoagulanti_orali": false,
         "reazioni_farmaci": false,
         "altri_farmaci": ""

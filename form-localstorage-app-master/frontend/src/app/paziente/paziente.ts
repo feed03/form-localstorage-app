@@ -43,7 +43,7 @@ export interface Farmaci {
   marcumar: boolean;
   ass: boolean;
   anticoagulanti: boolean;
-  bisfosfonati: boolean;
+  bifosfonati: boolean;
   anticoagulanti_orali: boolean;
   reazioni_farmaci: boolean;
   altri_farmaci: string;
@@ -146,7 +146,7 @@ export class Paziente {
       marcumar: false,
       ass: false,
       anticoagulanti: false,
-      bisfosfonati: false,
+      bifosfonati: false,
       anticoagulanti_orali: false,
       reazioni_farmaci: false,
       altri_farmaci: ''
